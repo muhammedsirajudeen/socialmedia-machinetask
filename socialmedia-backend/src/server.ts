@@ -2,7 +2,6 @@ import express from "express";
 import dotenv from "dotenv";
 import connectDB from "@config/db";
 import Redis from "ioredis";
-import {User as _User} from "shared"
 import authRouter from "@routes/auth.routes";
 import { setupSwagger } from "@swagger/setup";
 import { logger } from "@config/logger";
