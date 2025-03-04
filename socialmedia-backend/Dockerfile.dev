@@ -1,0 +1,10 @@
+FROM node:18
+
+WORKDIR /app
+# there is no lock here so check if lock is necessary
+COPY ./package.json ../package-lock.json  ./
+RUN npm install --omit=optional
+
+COPY . .
+
+CMD ["npm", "run", "dev"]

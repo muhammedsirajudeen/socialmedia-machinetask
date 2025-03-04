@@ -1,0 +1,11 @@
+{
+  "name": "boarding_machine_task",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "socialmedia-backend",
+    "socialmedia-frontend",
+    "shared"
+  ]
+}
+
