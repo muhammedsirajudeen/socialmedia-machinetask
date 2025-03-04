@@ -1,4 +1,4 @@
-import express, { Request,Response,NextFunction } from "express";
+import express, { Request, Response, NextFunction } from "express";
 import dotenv from "dotenv";
 import connectDB from "@config/db";
 import Redis from "ioredis";
@@ -22,30 +22,30 @@ app.use(express.json());
 /*
   Authentication Routes
 */
-app.use("/api/auth",authRouter)
+app.use("/api/auth", authRouter)
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-app.use((err:Error | CustomError,req:Request,res:Response,_next:NextFunction)=>{
-  if(err instanceof(CustomError)){
-    res.status(err.status).json({message:"",error:err.error})
+app.use((err: Error | CustomError, req: Request, res: Response, _next: NextFunction) => {
+  if (err instanceof (CustomError)) {
+    res.status(err.status).json({ message: "", error: err.error })
     return
   }
   logger.info(err.message)
-  if(err.message.includes('validation')){
-    res.status(HttpStatus.BAD_REQUEST).json({message:"",error:err.message})
+  if (err.message.includes('validation')) {
+    res.status(HttpStatus.BAD_REQUEST).json({ message: "", error: err.message })
     return
-  }else if(err.message.includes('duplicate')){
-    res.status(HttpStatus.CONFLICT).json({message:"",error:err.message})
+  } else if (err.message.includes('duplicate')) {
+    res.status(HttpStatus.CONFLICT).json({ message: "", error: err.message })
     return
   }
-  res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({message:"",error:err.message})
+  res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: "", error: err.message })
 })
-app.use((req,res)=>{
+app.use((req, res) => {
   logger.info(req.url)
-  res.status(404).json({message:"Not Found"})
+  res.status(404).json({ message: "Not Found" })
 })
 
 const PORT = process.env.PORT || 5000;
 
- 
+
 app.listen(PORT, () => logger.info(`Server running on port ${PORT}`));
 

@@ -3,13 +3,13 @@ import { IUser } from '@models/user.model';
 import jwt from 'jsonwebtoken';
 const SECRET_KEY = process.env.SECRET_KEY || 'your_default_secret';
 
-export enum ExpiryOptions{
-  access="10m",
-  refresh="1d"
+export enum ExpiryOptions {
+  access = "10m",
+  refresh = "1d"
 }
 
-export function TokenGenerator(payload: object, expiry:ExpiryOptions): string {
-  return jwt.sign(payload, SECRET_KEY,{expiresIn:expiry} );
+export function TokenGenerator(payload: object, expiry: ExpiryOptions): string {
+  return jwt.sign(payload, SECRET_KEY, { expiresIn: expiry });
 }
 
 export function TokenVerification(token: string): IUser | null {
