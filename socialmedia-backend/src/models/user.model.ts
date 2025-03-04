@@ -12,10 +12,12 @@ const userSchema: Schema<IUser> = new mongoose.Schema(
         username: {
             type: String,
             required: true,
+            unique:true
         },
         email: {
             type: String,
-            required: true
+            required: true,
+            unique:true
         },
         profilePicture: {
             type: String,

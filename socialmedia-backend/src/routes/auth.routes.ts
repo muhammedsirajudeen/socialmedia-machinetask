@@ -1,11 +1,10 @@
+import { UserControllerInstance } from "di/config";
 import { Router } from "express";
 
 const authRouter=Router()
 
-authRouter.post('/signin',(_req,res)=>{
-     res.send("hello")
-})
-authRouter.post('/signup')
+authRouter.post('/signup',UserControllerInstance.Signup.bind(UserControllerInstance))
+authRouter.post('/signin')
 authRouter.get('/verify')
 
 export default authRouter
