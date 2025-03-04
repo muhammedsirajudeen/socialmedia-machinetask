@@ -1,10 +1,11 @@
 import mongoose, { ObjectId, Schema,Document } from "mongoose"
 import { User } from "shared"
-
+import bcrypt from "bcrypt"
 
 export interface IUser extends Omit<User, "id"|"followers" | "following">, Document {
     followers: ObjectId[]
     following: ObjectId[]
+    comparePassword(candidatePassword: string): Promise<boolean>;
 }
 
 const userSchema: Schema<IUser> = new mongoose.Schema(
@@ -18,6 +19,11 @@ const userSchema: Schema<IUser> = new mongoose.Schema(
             type: String,
             required: true,
             unique:true
+        },
+        password:{
+            type:String,
+            required:true,
+            unique:false
         },
         profilePicture: {
             type: String,
@@ -37,6 +43,7 @@ const userSchema: Schema<IUser> = new mongoose.Schema(
             required: false,
             default: []
         },
+
     },
     {
         timestamps: true,
@@ -53,6 +60,21 @@ const userSchema: Schema<IUser> = new mongoose.Schema(
         }
     }
 )
+userSchema.pre<IUser>("save", async function (next) {
+    if (!this.isModified("password")) {
+        return next();
+    }
+    try {
+        const salt = await bcrypt.genSalt(10);
+        this.password = await bcrypt.hash(this.password, salt);
+        next();
+    } catch (err) {
+        next(err as Error);
+    }
+});
+userSchema.methods.comparePassword = async function (candidatePassword: string): Promise<boolean> {
+    return bcrypt.compare(candidatePassword, this.password);
+};
 
 const UserModel = mongoose.model("User", userSchema)
 export default UserModel

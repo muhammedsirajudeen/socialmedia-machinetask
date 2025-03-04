@@ -8,5 +8,6 @@ export interface User {
     following: string[]; // Array of user IDs
     createdAt: Date;
     updatedAt: Date;
+    password:string;
 }
   

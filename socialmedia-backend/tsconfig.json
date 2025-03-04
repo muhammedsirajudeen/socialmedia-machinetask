@@ -13,6 +13,7 @@
       "@routes/*": ["routes/*"],
       "@models/*": ["models/*"],
       "@swagger/*":["swagger/*"],
+      "@utils/*":["utils/*"],
       "shared":["../shared"],
     }
   }
