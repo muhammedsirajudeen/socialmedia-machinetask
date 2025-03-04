@@ -6,6 +6,7 @@ import authRouter from "@routes/auth.routes";
 import { setupSwagger } from "@swagger/setup";
 import { logger } from "@config/logger";
 import { HttpStatus } from "@utils/HttpStatus";
+import { CustomError } from "@utils/custom.error";
 dotenv.config();
 connectDB();
 // essentially meant to be used later
@@ -23,7 +24,11 @@ app.use(express.json());
 */
 app.use("/api/auth",authRouter)
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-app.use((err:Error,req:Request,res:Response,_next:NextFunction)=>{
+app.use((err:Error | CustomError,req:Request,res:Response,_next:NextFunction)=>{
+  if(err instanceof(CustomError)){
+    res.status(err.status).json({message:"",error:err.error})
+    return
+  }
   logger.info(err.message)
   if(err.message.includes('validation')){
     res.status(HttpStatus.BAD_REQUEST).json({message:"",error:err.message})
@@ -32,7 +37,7 @@ app.use((err:Error,req:Request,res:Response,_next:NextFunction)=>{
     res.status(HttpStatus.CONFLICT).json({message:"",error:err.message})
     return
   }
-  res.status(500).json({message:"",error:err.message})
+  res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({message:"",error:err.message})
 })
 app.use((req,res)=>{
   logger.info(req.url)

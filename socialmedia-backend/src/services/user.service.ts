@@ -13,4 +13,15 @@ export class UserService extends BaseService<IUser,UserRepository>{
         this.repository=repository
         this.logger=logger
     }
+    async verifyPassword(user:Partial<IUser>){
+        const checkUser=await this.repository.findUserByEmailOrUsername(user)
+        if(!checkUser){
+            throw new Error('User not found')
+        }
+        if(!checkUser.comparePassword(user.password!)){
+            throw new Error('Invalid credentials')
+        }
+        return checkUser
+    }
+
 }

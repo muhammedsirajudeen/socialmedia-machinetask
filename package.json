@@ -6,6 +6,8 @@
     "socialmedia-backend",
     "socialmedia-frontend",
     "shared"
-  ]
+  ],
+  "dependencies": {
+    "dotenv": "^16.4.7"
+  }
 }
-
