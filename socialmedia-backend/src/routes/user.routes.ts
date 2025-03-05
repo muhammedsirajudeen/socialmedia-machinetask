@@ -17,4 +17,6 @@ userRouter.put('/post/dislike/:id',UserMiddleware,PostController.dislikeAPost.bi
 userRouter.get('/post',UserMiddleware,PostController.GetPostsByUser.bind(PostController))
 userRouter.get('/post/:id',UserMiddleware,PostController.GetPost.bind(PostController))
 
+userRouter.put('/post/comment/:id',UserMiddleware,PostController.AddComments.bind(PostController))
+
 export default userRouter

@@ -1,9 +1,10 @@
-import { IPost } from "@models/post.model";
+import {  CommentModel, IPost } from "@models/post.model";
 import { PostService } from "services/post.service";
 import { NextFunction, Request,Response } from "express";
 import { HttpMessage, HttpStatus } from "@utils/HttpStatus";
 import { CustomError } from "@utils/custom.error";
-import { isObjectIdOrHexString } from "mongoose";
+import mongoose, { isObjectIdOrHexString } from "mongoose";
+import { logger } from "@config/logger";
 export class PostController{
     service:PostService
     constructor(service:PostService){
@@ -91,6 +92,37 @@ export class PostController{
             }
             const posts=await this.service.findAll({authorId:userId.id})
             res.status(HttpStatus.OK).json({message:HttpMessage.OK,posts})
+        } catch (error) {
+            next(error)
+        }
+    }
+
+    async AddComments(req:Request,res:Response,next:NextFunction){
+        try {
+            const {id}=req.params
+            if(!id || !isObjectIdOrHexString(id)){
+                throw new CustomError(HttpMessage.BAD_REQUEST,HttpStatus.BAD_REQUEST)
+            }
+            const authorId=req.user
+            const commentRequest=req.body
+            const newComment = new CommentModel(
+                {
+                    authorId: new mongoose.Types.ObjectId(authorId?.id),
+                    content:commentRequest.content,
+                    likes: [],
+                    likeCount: 0,
+                    dislikeCount: 0,
+                    createdAt: new Date(),
+                    updatedAt: new Date(),
+                }
+            )
+            const newPost=await this.service.addComment(id,newComment)
+            
+            logger.info(newPost)
+            if(!newPost){
+                throw new CustomError(HttpMessage.BAD_REQUEST,HttpStatus.BAD_REQUEST)
+            }
+            res.status(HttpStatus.OK).json({message:HttpStatus.OK,post:newPost})
         } catch (error) {
             next(error)
         }

@@ -44,7 +44,7 @@ const mediaSchema: Schema<Media> = new Schema(
     }
 );
 
-const commentSchema: Schema<IComment> = new Schema(
+export const commentSchema: Schema<IComment> = new Schema(
     {
         authorId: {
             type: Schema.Types.ObjectId,
@@ -153,6 +153,6 @@ const postSchema: Schema<IPost> = new Schema(
         }
     }
 );
-
 const PostModel = mongoose.model<IPost>('Post', postSchema);
+export const CommentModel=mongoose.model<IComment>('Comment',commentSchema)
 export default PostModel;

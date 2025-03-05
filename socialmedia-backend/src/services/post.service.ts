@@ -1,4 +1,4 @@
-import { IPost } from "@models/post.model";
+import { IComment, IPost } from "@models/post.model";
 import { BaseService } from "./base.service";
 import { PostRepository } from "repository/post.repository";
 import { CustomError } from "@utils/custom.error";
@@ -77,5 +77,16 @@ export class PostService extends BaseService<IPost,PostRepository>{
 
         await this.repository.addToSet(id, 'dislikes', userObjectId);
         return await this.repository.incrementField(id, 'dislikeCount');
+    }
+    async addComment(id:string,comment:IComment){
+        const checkPost=await this.repository.findById(id)
+        if (!checkPost) {
+            throw new CustomError(HttpMessage.NOT_FOUND, HttpStatus.NOT_FOUND);
+        }
+        checkPost.comments.push(comment as unknown as IComment)
+        await checkPost.save();
+        return await this.repository.findById(id);
+
+
     }
 }
