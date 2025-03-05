@@ -1,5 +1,5 @@
 // import { UserControllerInstance } from "di/config";
-import { PostControllerInstance as PostController } from "di/config";
+import { AuthControllerInstance, PostControllerInstance as PostController, UserControllerInstance } from "di/config";
 import { Router } from "express";
 import { UserMiddleware } from "middleware/user.middleware";
 // import { UserMiddleware } from "@middleware";
@@ -21,6 +21,6 @@ userRouter.get('/post/:id',UserMiddleware,PostController.GetPost.bind(PostContro
 userRouter.put('/post/comment/:id',UserMiddleware,PostController.AddComments.bind(PostController))
 userRouter.delete('/post/comment/:postId/:commentId',UserMiddleware,PostController.RemoveComment.bind(PostController))
 
-
+userRouter.put('/profile/:id',UserMiddleware,UserControllerInstance.UpdateProfile.bind(AuthControllerInstance))
 
 export default userRouter

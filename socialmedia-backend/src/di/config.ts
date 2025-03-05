@@ -2,6 +2,7 @@ import PostModel from "@models/post.model";
 import UserModel from "@models/user.model";
 import { AuthController } from "controller/auth.controller";
 import { PostController } from "controller/post.controller";
+import { UserController } from "controller/user.controller";
 import { PostRepository } from "repository/post.repository";
 import { UserRepository } from "repository/user.repository";
 import { PostService } from "services/post.service";
@@ -15,6 +16,7 @@ const PostRepositoryInstance=new PostRepository(PostModel)
 const PostServiceInstance=new PostService(PostRepositoryInstance)
 const PostControllerInstance=new PostController(PostServiceInstance)
 
+const UserControllerInstance=new UserController(UserServiceInstance)
 
 
 
@@ -22,5 +24,6 @@ const PostControllerInstance=new PostController(PostServiceInstance)
 
 export {
     AuthControllerInstance,
-    PostControllerInstance
+    PostControllerInstance,
+    UserControllerInstance
 }
