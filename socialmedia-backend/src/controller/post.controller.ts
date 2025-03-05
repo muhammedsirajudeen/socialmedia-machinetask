@@ -127,4 +127,18 @@ export class PostController{
             next(error)
         }
     }
+    async RemoveComment(req:Request,res:Response,next:NextFunction){
+        try {
+            const {postId}=req.params
+            const {commentId}=req.params
+            const userId=req.user
+            if(!postId || !userId|| !commentId || !isObjectIdOrHexString(commentId) || !isObjectIdOrHexString(postId)){
+                throw new CustomError(HttpMessage.BAD_REQUEST,HttpStatus.BAD_REQUEST)
+            }
+            await this.service.removeComment(postId,commentId,userId.id)
+            res.status(HttpStatus.NO_CONTENT).json({message:""})
+        } catch (error) {
+            next(error)
+        }
+    }
 }

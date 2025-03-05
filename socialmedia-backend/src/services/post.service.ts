@@ -5,32 +5,32 @@ import { CustomError } from "@utils/custom.error";
 import { HttpMessage, HttpStatus } from "@utils/HttpStatus";
 import mongoose from "mongoose";
 
-export class PostService extends BaseService<IPost,PostRepository>{
+export class PostService extends BaseService<IPost, PostRepository> {
     protected repository: PostRepository;
-    constructor(repository:PostRepository){
+    constructor(repository: PostRepository) {
         super(repository)
-        this.repository=repository
+        this.repository = repository
     }
-    async createAndPopulate(post:IPost){
+    async createAndPopulate(post: IPost) {
         return await this.repository.createAndPopulate(post)
     }
-    async updateAndPopulate(id:string,post:Partial<IPost>,userid:string){
-        const checkPost=await this.repository.findById(id)
-        if(!checkPost){
-            throw new CustomError(HttpMessage.NOT_FOUND,HttpStatus.NOT_FOUND)
+    async updateAndPopulate(id: string, post: Partial<IPost>, userid: string) {
+        const checkPost = await this.repository.findById(id)
+        if (!checkPost) {
+            throw new CustomError(HttpMessage.NOT_FOUND, HttpStatus.NOT_FOUND)
         }
-        if(checkPost.authorId.toHexString()!==userid){
-            throw new CustomError(HttpMessage.UNAUTHORIZED,HttpStatus.UNAUTHORIZED)
+        if (checkPost.authorId.toHexString() !== userid) {
+            throw new CustomError(HttpMessage.UNAUTHORIZED, HttpStatus.UNAUTHORIZED)
         }
-        return await this.repository.updateAndPopulate(id,post)
+        return await this.repository.updateAndPopulate(id, post)
     }
-    async deleteWithChecks(id:string,userid:string){
-        const deletePost=await this.repository.findById(id)
-        if(!deletePost){
-            throw new CustomError(HttpMessage.NOT_FOUND,HttpStatus.NOT_FOUND)
+    async deleteWithChecks(id: string, userid: string) {
+        const deletePost = await this.repository.findById(id)
+        if (!deletePost) {
+            throw new CustomError(HttpMessage.NOT_FOUND, HttpStatus.NOT_FOUND)
         }
-        if(deletePost.authorId.toHexString()!==userid){
-            throw new CustomError(HttpMessage.UNAUTHORIZED,HttpStatus.UNAUTHORIZED)
+        if (deletePost.authorId.toHexString() !== userid) {
+            throw new CustomError(HttpMessage.UNAUTHORIZED, HttpStatus.UNAUTHORIZED)
         }
         return await this.repository.delete(id)
     }
@@ -78,15 +78,27 @@ export class PostService extends BaseService<IPost,PostRepository>{
         await this.repository.addToSet(id, 'dislikes', userObjectId);
         return await this.repository.incrementField(id, 'dislikeCount');
     }
-    async addComment(id:string,comment:IComment){
-        const checkPost=await this.repository.findById(id)
+    async addComment(id: string, comment: IComment) {
+        const checkPost = await this.repository.findById(id)
         if (!checkPost) {
             throw new CustomError(HttpMessage.NOT_FOUND, HttpStatus.NOT_FOUND);
         }
+        // kinda violation against repository pattern
         checkPost.comments.push(comment as unknown as IComment)
         await checkPost.save();
         return await this.repository.findById(id);
-
-
+    }
+    async removeComment(postId:string,commentId:string,userId:string){
+        const post=await this.repository.findById(postId)
+        if(!post){
+            throw new CustomError(HttpMessage.NOT_FOUND, HttpStatus.NOT_FOUND);
+        }
+        //Again ensuring bola restriction
+        post.comments.forEach((comment)=>{
+            if(comment.id===commentId && comment.authorId.toHexString()!==userId){
+                throw new CustomError(HttpMessage.UNAUTHORIZED,HttpStatus.UNAUTHORIZED)
+            }
+        })
+        return await this.repository.pull(postId,'comments',{_id:new mongoose.Types.ObjectId(commentId)})
     }
 }

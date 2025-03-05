@@ -2,11 +2,11 @@ import { logger } from "@config/logger";
 import { Document, FilterQuery, Model, UpdateQuery } from "mongoose";
 import { Logger } from "winston";
 export class BaseRepository<T extends Document> {
-    logger:Logger
+    logger: Logger
     private model: Model<T>
     constructor(model: Model<T>) {
         this.model = model
-        this.logger=logger
+        this.logger = logger
     }
 
     async create(data: Partial<T>): Promise<T> {
@@ -35,20 +35,20 @@ export class BaseRepository<T extends Document> {
 
     async addToSet(id: string, field: string, value: any): Promise<T | null> {
         const updatedDocument = await this.model.findByIdAndUpdate(
-          id,
-          { $addToSet: { [field]: value } } as UpdateQuery<T>,
-          { new: true }
+            id,
+            { $addToSet: { [field]: value } } as UpdateQuery<T>,
+            { new: true }
         );
         return updatedDocument as unknown as T | null;
-      }
-      async pull(id: string, field: string, value: any): Promise<T | null> {
+    }
+    async pull(id: string, field: string, value: any): Promise<T | null> {
         const updatedDocument = await this.model.findByIdAndUpdate(
-          id,
-          { $pull: { [field]: value } } as UpdateQuery<T>,
-          { new: true }
+            id,
+            { $pull: { [field]: value } } as UpdateQuery<T>,
+            { new: true }
         );
         return updatedDocument as unknown as T | null;
-      } 
+    }
     async incrementField(id: string, field: string): Promise<T | null> {
         const updatedDocument = await this.model.findByIdAndUpdate(
             id,
