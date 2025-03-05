@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken';
 const SECRET_KEY = process.env.SECRET_KEY || 'your_default_secret';
 
 export enum ExpiryOptions {
-  access = "10m",
+  access = "1d",
   refresh = "1d"
 }
 

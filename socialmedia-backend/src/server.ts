@@ -7,6 +7,8 @@ import { setupSwagger } from "@swagger/setup";
 import { logger } from "@config/logger";
 import { HttpStatus } from "@utils/HttpStatus";
 import { CustomError } from "@utils/custom.error";
+import userRouter from "@routes/user.routes";
+import { IUser } from "@models/user.model";
 dotenv.config();
 connectDB();
 // essentially meant to be used later
@@ -14,7 +16,13 @@ const _redis = new Redis({
   host: process.env.REDIS_HOST,
   port: Number(process.env.REDIS_PORT),
 });
-
+declare global {
+  namespace Express {
+    interface Request {
+      user?: IUser
+    }
+  }
+}
 const app = express();
 setupSwagger(app);
 app.use(express.json());
@@ -23,6 +31,7 @@ app.use(express.json());
   Authentication Routes
 */
 app.use("/api/auth", authRouter)
+app.use("/api/user/",userRouter)
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 app.use((err: Error | CustomError, req: Request, res: Response, _next: NextFunction) => {
   if (err instanceof (CustomError)) {
@@ -41,7 +50,7 @@ app.use((err: Error | CustomError, req: Request, res: Response, _next: NextFunct
 })
 app.use((req, res) => {
   logger.info(req.url)
-  res.status(404).json({ message: "Not Found" })
+  res.status(HttpStatus.NOT_FOUND).json({ message: "Route Not Found" })
 })
 
 const PORT = process.env.PORT || 5000;

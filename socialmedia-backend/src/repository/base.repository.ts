@@ -49,5 +49,22 @@ export class BaseRepository<T extends Document> {
         );
         return updatedDocument as unknown as T | null;
       } 
+    async incrementField(id: string, field: string): Promise<T | null> {
+        const updatedDocument = await this.model.findByIdAndUpdate(
+            id,
+            { $inc: { [field]: 1 } } as UpdateQuery<T>,
+            { new: true }
+        );
+        return updatedDocument as unknown as T | null;
+    }
+
+    async decrementField(id: string, field: string): Promise<T | null> {
+        const updatedDocument = await this.model.findByIdAndUpdate(
+            id,
+            { $inc: { [field]: -1 } } as UpdateQuery<T>,
+            { new: true }
+        );
+        return updatedDocument as unknown as T | null;
+    }
 
 }

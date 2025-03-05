@@ -9,13 +9,24 @@
     "resolveJsonModule": true,
     "baseUrl": "src",
     "paths": {
-      "@config/*": ["config/*"],
-      "@routes/*": ["routes/*"],
-      "@models/*": ["models/*"],
-      "@swagger/*":["swagger/*"],
-      "@utils/*":["utils/*"],
-      "shared":["../shared"],
+      "@config/*": [
+        "config/*"
+      ],
+      "@routes/*": [
+        "routes/*"
+      ],
+      "@models/*": [
+        "models/*"
+      ],
+      "@swagger/*": [
+        "swagger/*"
+      ],
+      "@utils/*": [
+        "utils/*"
+      ],
+      "shared": [
+        "../shared"
+      ],
     }
   }
 }
-

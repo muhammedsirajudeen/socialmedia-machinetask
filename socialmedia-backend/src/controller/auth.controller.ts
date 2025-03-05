@@ -5,7 +5,7 @@ import { HttpStatus } from "@utils/HttpStatus";
 import { ExpiryOptions, TokenGenerator, TokenVerification } from "@utils/token.helper";
 import { CustomError } from "@utils/custom.error";
 
-export class UserController {
+export class AuthController {
     service: UserService
     constructor(service: UserService) {
         this.service = service

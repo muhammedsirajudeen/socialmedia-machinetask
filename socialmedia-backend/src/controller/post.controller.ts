@@ -1,0 +1,98 @@
+import { IPost } from "@models/post.model";
+import { PostService } from "services/post.service";
+import { NextFunction, Request,Response } from "express";
+import { HttpMessage, HttpStatus } from "@utils/HttpStatus";
+import { CustomError } from "@utils/custom.error";
+import { isObjectIdOrHexString } from "mongoose";
+export class PostController{
+    service:PostService
+    constructor(service:PostService){
+        this.service=service
+    }
+    async createPost(req:Request,res:Response,next:NextFunction){
+        try {
+            const postRequest:IPost=req.body
+            const newPost=await this.service.create(postRequest)
+            res.status(HttpStatus.CREATED).json({message:HttpStatus.CREATED,post:newPost})
+        } catch (error) {
+            next(error)
+        }
+    }
+    async updatePost(req:Request,res:Response,next:NextFunction){
+        try {
+            //tight coupling kinda like violations fix it later
+            const {id}=req.params
+            if(!id || !isObjectIdOrHexString(id)){
+                throw new CustomError(HttpMessage.BAD_REQUEST,HttpStatus.BAD_REQUEST)
+            }
+            //guard for BOLA owasp #1
+            const postRequest:IPost=req.body
+            const updatedPost=await this.service.updateAndPopulate(id,postRequest,req.user?.id)
+            res.status(HttpStatus.OK).json({message:HttpStatus.OK,post:updatedPost})
+        } catch (error) {
+            next(error)
+        }
+    }
+    async deletePost(req:Request,res:Response,next:NextFunction){
+        try {
+            const {id}=req.params
+            if(!id || !isObjectIdOrHexString(id)){
+                throw new CustomError(HttpMessage.BAD_REQUEST,HttpStatus.BAD_REQUEST)
+            }
+            await this.service.deleteWithChecks(id,req.user?.id)
+            res.status(HttpStatus.NO_CONTENT).json({message:""})
+        } catch (error) {
+            next(error)
+        }
+    }
+    async likeAPost(req:Request,res:Response,next:NextFunction){
+        try {
+            const {id}=req.params
+            const userId=req.user
+            if(!id || !isObjectIdOrHexString || !userId){
+                throw new CustomError(HttpMessage.BAD_REQUEST,HttpStatus.BAD_REQUEST)
+            }
+            const updatedPost=await this.service.addLikes(id,userId.id)
+            res.status(HttpStatus.OK).json({message:HttpStatus.OK,post:updatedPost})
+        } catch (error) {
+            next(error)
+        }
+    }
+    async dislikeAPost(req:Request,res:Response,next:NextFunction){
+        try {
+            const {id}=req.params
+            const userId=req.user
+            if(!id || !isObjectIdOrHexString || !userId){
+                throw new CustomError(HttpMessage.BAD_REQUEST,HttpStatus.BAD_REQUEST)
+            }
+            const updatedPost=await this.service.dislike(id,userId.id)
+            res.status(HttpStatus.OK).json({message:HttpStatus.OK,post:updatedPost})
+        } catch (error) {
+            next(error)
+        }
+    }
+    async GetPost(req:Request,res:Response,next:NextFunction){
+        try {
+            const {id}=req.params
+            if(!id || !isObjectIdOrHexString(id)){
+                throw new CustomError(HttpMessage.BAD_REQUEST,HttpStatus.BAD_REQUEST)
+            }
+            const post=await this.service.findById(id)
+            res.status(HttpStatus.OK).json({message:HttpMessage.OK,post})
+        } catch (error) {
+            next(error)
+        }
+    }
+    async GetPostsByUser(req:Request,res:Response,next:NextFunction){
+        try {
+            const userId=req.user
+            if(!userId){
+                throw new CustomError(HttpMessage.UNAUTHORIZED,HttpStatus.UNAUTHORIZED)
+            }
+            const posts=await this.service.findAll({authorId:userId.id})
+            res.status(HttpStatus.OK).json({message:HttpMessage.OK,posts})
+        } catch (error) {
+            next(error)
+        }
+    }
+}
