@@ -5,7 +5,6 @@ import { Logger } from "winston";
 import { logger } from "@config/logger";
 import { CustomError } from "@utils/custom.error";
 import { HttpMessage, HttpStatus } from "@utils/HttpStatus";
-
 export class UserService extends BaseService<IUser,UserRepository>{
     protected repository: UserRepository;
     logger:Logger

@@ -9,6 +9,8 @@ import { HttpStatus } from "@utils/HttpStatus";
 import { CustomError } from "@utils/custom.error";
 import userRouter from "@routes/user.routes";
 import { IUser } from "@models/user.model";
+import { existsSync, mkdirSync } from "fs";
+import path from "path"
 dotenv.config();
 connectDB();
 // essentially meant to be used later
@@ -24,6 +26,9 @@ declare global {
   }
 }
 const app = express();
+if(!existsSync(path.join(__dirname,"./uploads"))){
+  mkdirSync(path.join(__dirname,"./uploads"))
+}
 setupSwagger(app);
 app.use(express.json());
 

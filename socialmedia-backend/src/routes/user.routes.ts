@@ -1,9 +1,7 @@
-// import { UserControllerInstance } from "di/config";
+import upload from "@config/multerConfig";
 import { AuthControllerInstance, PostControllerInstance as PostController, UserControllerInstance } from "di/config";
 import { Router } from "express";
 import { UserMiddleware } from "middleware/user.middleware";
-// import { UserMiddleware } from "@middleware";
-
 const userRouter = Router()
 /*
     TODO:
@@ -22,5 +20,10 @@ userRouter.put('/post/comment/:id',UserMiddleware,PostController.AddComments.bin
 userRouter.delete('/post/comment/:postId/:commentId',UserMiddleware,PostController.RemoveComment.bind(PostController))
 
 userRouter.put('/profile/:id',UserMiddleware,UserControllerInstance.UpdateProfile.bind(AuthControllerInstance))
+
+userRouter.put('/follow/:id',UserMiddleware,UserControllerInstance.FollowSomeone.bind(AuthControllerInstance))
+userRouter.put('/unfollow/:id',UserMiddleware,UserControllerInstance.UnfollowSomeone.bind(AuthControllerInstance))
+
+userRouter.post('/uploads',UserMiddleware,upload.array('images'),UserControllerInstance.Uploads)
 
 export default userRouter
