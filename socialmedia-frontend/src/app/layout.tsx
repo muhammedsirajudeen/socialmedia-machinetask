@@ -6,8 +6,7 @@ import { Toaster } from "@/components/ui/sonner"
 import { ReduxProvider } from "@/store/redux.provider"
 import UserComponent from "@/components/user-component"
 
-// import { Toast } from "@/components/toaster"
-const inter = Inter({ subsets: ["latin"] })
+const inter = Inter({ subsets: ["latin"], display: "swap" })
 
 export const metadata: Metadata = {
   title: "SocialHub - Connect, Share, Engage",
