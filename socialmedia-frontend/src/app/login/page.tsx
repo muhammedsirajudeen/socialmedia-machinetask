@@ -1,82 +1,49 @@
 "use client"
 
-import type React from "react"
-
-import { useState } from "react"
-import Link from "next/link"
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { z } from "zod"
 import { useRouter } from "next/navigation"
-import { MessageSquare } from "lucide-react"
-
+import Link from "next/link"
+import { MessageSquare, Worm } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import {toast} from "sonner"
+import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form"
+import { toast } from "sonner"
+import axiosInstance from "../utils/axios.instance"
+import { useAppDispatch } from "@/store/hooks"
+import { login } from "@/store/user.slice"
+
+export const loginSchema = z.object({
+  email: z.string().email("Invalid email format"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
+})
+
+type LoginFormValues = z.infer<typeof loginSchema>
+
 export default function LoginPage() {
   const router = useRouter()
-  const [formData, setFormData] = useState({
-    email: "",
-    password: "",
+  const form = useForm<LoginFormValues>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+    },
   })
-  const [errors, setErrors] = useState({
-    email: "",
-    password: "",
-  })
-  const [isLoading, setIsLoading] = useState(false)
+  const dispatch=useAppDispatch()
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target
-    setFormData((prev) => ({ ...prev, [name]: value }))
-
-    // Clear error when user types
-    if (errors[name as keyof typeof errors]) {
-      setErrors((prev) => ({ ...prev, [name]: "" }))
-    }
-  }
-
-  const validateForm = () => {
-    let isValid = true
-    const newErrors = { ...errors }
-
-    if (!formData.email.trim()) {
-      newErrors.email = "Email is required"
-      isValid = false
-    }
-
-    if (!formData.password) {
-      newErrors.password = "Password is required"
-      isValid = false
-    }
-
-    setErrors(newErrors)
-    return isValid
-  }
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-
-    if (!validateForm()) return
-
-    setIsLoading(true)
-
+  const onSubmit = async (data: LoginFormValues) => {
     try {
-      // In a real app, this would be an API call to your backend
-      // const response = await fetch('/api/auth/login', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(formData)
-      // })
-
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1500))
-
+      const response=await axiosInstance.post('/auth/signin',data)
+      console.log(response.data)
+      dispatch(login(response.data.user))
       toast("Login successful!")
-
+      localStorage.setItem('accessToken',response.data.accessToken)
       router.push("/dashboard")
     } catch (error) {
       toast("Login failed")
-    } finally {
-      setIsLoading(false)
     }
   }
 
@@ -92,48 +59,51 @@ export default function LoginPage() {
           <CardTitle className="text-2xl font-bold">Log in</CardTitle>
           <CardDescription>Enter your credentials to access your account</CardDescription>
         </CardHeader>
-        <form onSubmit={handleSubmit}>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)}>
+            <CardContent className="space-y-4">
+              <FormField
+                control={form.control}
                 name="email"
-                type="email"
-                placeholder="john@example.com"
-                value={formData.email}
-                onChange={handleChange}
-                required
+                render={({ field }) => (
+                  <FormItem>
+                    <Label htmlFor="email">Email</Label>
+                    <FormControl>
+                      <Input {...field} id="email" placeholder="john@example.com" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-              {errors.email && <p className="text-sm text-destructive">{errors.email}</p>}
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
+
+              <FormField
+                control={form.control}
                 name="password"
-                type="password"
-                value={formData.password}
-                onChange={handleChange}
-                required
+                render={({ field }) => (
+                  <FormItem>
+                    <Label htmlFor="password">Password</Label>
+                    <FormControl>
+                      <Input {...field} id="password" type="password" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-              {errors.password && <p className="text-sm text-destructive">{errors.password}</p>}
-            </div>
-          </CardContent>
-          <CardFooter className="flex flex-col space-y-4">
-            <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? "Logging in..." : "Log in"}
-            </Button>
-            <div className="text-center text-sm">
-              Don't have an account?{" "}
-              <Link href="/register" className="underline">
-                Sign up
-              </Link>
-            </div>
-          </CardFooter>
-        </form>
+            </CardContent>
+            <CardFooter className="flex flex-col space-y-4">
+              <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
+                {form.formState.isSubmitting ? "Logging in..." : "Log in"}
+              </Button>
+              <div className="text-center text-sm">
+                Don't have an account?{" "}
+                <Link href="/register" className="underline">
+                  Sign up
+                </Link>
+              </div>
+            </CardFooter>
+          </form>
+        </Form>
       </Card>
     </div>
   )
 }
-

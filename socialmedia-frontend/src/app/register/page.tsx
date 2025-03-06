@@ -16,6 +16,8 @@ import { toast } from "sonner"
 import { registerSchema } from "shared"
 import axios from "axios"
 import axiosInstance from "../utils/axios.instance"
+import { useAppDispatch } from "@/store/hooks"
+import { login } from "@/store/user.slice"
 export default function RegisterPage() {
   const router = useRouter()
   const form = useForm({
@@ -26,15 +28,17 @@ export default function RegisterPage() {
       password: "",
     },
   })
+  const dispatch=useAppDispatch()
 
   const onSubmit = async (data:z.infer<typeof registerSchema>) => {
     try {
       const response=await axiosInstance.post('auth/signup',data)
       console.log(response.data)
       // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1500))
       toast("Account created!")
-      // router.push("/login")
+      router.push("/login")
+
+      // dispatch(login(response.data.user))
     } catch (error) {
       toast("Registration failed")
     }

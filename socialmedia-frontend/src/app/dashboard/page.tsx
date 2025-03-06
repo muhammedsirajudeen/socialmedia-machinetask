@@ -14,52 +14,19 @@ import { Input } from "@/components/ui/input"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { CreatePostDialog } from "@/components/create-post-dialog"
 import {toast} from "sonner"
+import { useAppSelector } from "@/store/hooks"
+import { useFetch } from "../utils/useFetch"
+import { PopulatedPost } from "../types"
+interface Response{
+  posts:PopulatedPost[]
+}
 export default function DashboardPage() {
   const router = useRouter()
   const [searchQuery, setSearchQuery] = useState("")
   const [isCreatePostOpen, setIsCreatePostOpen] = useState(false)
+  const user=useAppSelector((state)=>state.global.user)
+  const {data,isLoading}:{data:Response|undefined,isLoading:boolean}=useFetch('/user/posts')
 
-  // Mock user data
-  const user = {
-    id: "1",
-    username: "johndoe",
-    email: "john@example.com",
-    avatar: "/placeholder-user.jpg",
-  }
-
-  // Mock posts data
-  const posts = [
-    {
-      id: "1",
-      userId: "2",
-      username: "janedoe",
-      content: "Just finished reading an amazing book about artificial intelligence. Highly recommend it!",
-      timestamp: "2 hours ago",
-      likes: 24,
-      comments: 5,
-      isLiked: false,
-    },
-    {
-      id: "2",
-      userId: "3",
-      username: "marksmith",
-      content: "Beautiful day for a hike! 🏔️ #nature #outdoors",
-      timestamp: "5 hours ago",
-      likes: 42,
-      comments: 8,
-      isLiked: true,
-    },
-    {
-      id: "3",
-      userId: "4",
-      username: "sarahj",
-      content: "Just launched my new portfolio website! Check it out and let me know what you think. #webdev #design",
-      timestamp: "1 day ago",
-      likes: 18,
-      comments: 3,
-      isLiked: false,
-    },
-  ]
 
   const handleLogout = () => {
     // In a real app, this would call an API to logout
@@ -108,8 +75,8 @@ export default function DashboardPage() {
               <span className="sr-only">Notifications</span>
             </Button>
             <Avatar className="h-8 w-8">
-              <AvatarImage src={user.avatar} alt={user.username} />
-              <AvatarFallback>{user.username.slice(0, 2).toUpperCase()}</AvatarFallback>
+              <AvatarImage src={user?.profilePicture} alt={user?.username} />
+              <AvatarFallback>{user?.username.slice(0, 2).toUpperCase()}</AvatarFallback>
             </Avatar>
           </div>
         </div>
@@ -158,40 +125,46 @@ export default function DashboardPage() {
               <TabsTrigger value="trending">Trending</TabsTrigger>
             </TabsList>
             <TabsContent value="feed" className="space-y-4 mt-4">
-              {posts.map((post) => (
-                <Card key={post.id}>
-                  <CardHeader className="flex flex-row items-center gap-4 p-4">
-                    <Avatar>
-                      <AvatarFallback>{post.username.slice(0, 2).toUpperCase()}</AvatarFallback>
-                    </Avatar>
-                    <div className="grid gap-1">
-                      <p className="text-sm font-medium leading-none">@{post.username}</p>
-                      <p className="text-sm text-muted-foreground">{post.timestamp}</p>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="p-4 pt-0">
-                    <p>{post.content}</p>
-                  </CardContent>
-                  <CardFooter className="flex justify-between p-4">
-                    <div className="flex items-center gap-4">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className={post.isLiked ? "text-primary" : ""}
-                        onClick={() => handleLikePost(post.id)}
-                      >
-                        👍 {post.likes}
-                      </Button>
+            {isLoading ? (
+                <p>Loading posts...</p>
+              ) : data?.posts.length ? (
+                data.posts.map((post) => (
+                  <Card key={post.id}>
+                    <CardHeader className="flex flex-row items-center gap-4 p-4">
+                      <Avatar>
+                        <AvatarFallback>{post.authorId.username.slice(0, 2).toUpperCase()}</AvatarFallback>
+                      </Avatar>
+                      <div className="grid gap-1">
+                        <p className="text-sm font-medium leading-none">@{post.authorId.username}</p>
+                        <p className="text-sm text-muted-foreground">{new Date(post.createdAt).toLocaleString()}</p>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="p-4 pt-0">
+                      <p>{post.content}</p>
+                    </CardContent>
+                    <CardFooter className="flex justify-between p-4">
+                      <div className="flex items-center gap-4">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className={post.likes.length ? "text-primary" : ""}
+                          onClick={() => handleLikePost(post.id)}
+                        >
+                          👍 {post.likes.length}
+                        </Button>
+                        <Button variant="ghost" size="sm">
+                          💬 {post.comments.length}
+                        </Button>
+                      </div>
                       <Button variant="ghost" size="sm">
-                        💬 {post.comments}
+                        Share
                       </Button>
-                    </div>
-                    <Button variant="ghost" size="sm">
-                      Share
-                    </Button>
-                  </CardFooter>
-                </Card>
-              ))}
+                    </CardFooter>
+                  </Card>
+                ))
+              ) : (
+                <p>No posts available.</p>
+              )}
             </TabsContent>
             <TabsContent value="following" className="space-y-4 mt-4">
               <div className="flex flex-col items-center justify-center py-12 text-center">
