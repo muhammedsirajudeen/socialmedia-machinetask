@@ -15,6 +15,7 @@ export class PostRepository extends BaseRepository<IPost>{
         return await (await this.update(id,post))?.populate({path:'likes',select:'username profilepicture'})
     }
     async findAndPopulate(){
+        //tosolve: the problem is the id here
         return await this._model.find().populate([{path:'authorId',select:'-password'},{path:'comments.authorId',select:'-password'}])
     }
 }

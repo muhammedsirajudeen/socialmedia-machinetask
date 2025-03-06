@@ -4,7 +4,7 @@ import { UserService } from "services/user.service";
 import { HttpStatus } from "@utils/HttpStatus";
 import { ExpiryOptions, TokenGenerator, TokenVerification } from "@utils/token.helper";
 import { CustomError } from "@utils/custom.error";
-import { registerSchema } from "shared";
+import { loginSchema, registerSchema } from "shared";
 import { logger } from "@config/logger";
 export class AuthController {
     service: UserService
@@ -27,6 +27,7 @@ export class AuthController {
         try {
             const userRequest: IUser = req.body
             const user = await this.service.verifyPassword(userRequest)
+            loginSchema.parse(user)
             const accessToken = TokenGenerator({ ...user.toObject(), password: undefined }, ExpiryOptions.access)
             const refreshToken = TokenGenerator({ ...user.toObject(), password: undefined }, ExpiryOptions.refresh)
             res.cookie('refreshToken', refreshToken, {

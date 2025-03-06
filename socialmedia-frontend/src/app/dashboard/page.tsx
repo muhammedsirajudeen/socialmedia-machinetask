@@ -5,7 +5,7 @@ import type React from "react"
 import { useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { Bell, Home, LogOut, MessageSquare, Plus, Search, Settings, User } from "lucide-react"
+import { Bell, Delete, Home, LogOut, MessageSquare, Plus, Search, Settings, Trash2, User } from "lucide-react"
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
@@ -18,7 +18,6 @@ import { useAppSelector } from "@/store/hooks"
 import { useFetch } from "../utils/useFetch"
 import { PopulatedPost } from "../types"
 import axiosInstance from "../utils/axios.instance"
-import { mutate } from "swr"
 interface Response{
   posts:PopulatedPost[]
 }
@@ -28,8 +27,8 @@ export default function DashboardPage() {
   const [isCreatePostOpen, setIsCreatePostOpen] = useState(false)
   const user=useAppSelector((state)=>state.global.user)
   const {data,isLoading,mutate}:{data:Response|undefined,isLoading:boolean,mutate:()=>void}=useFetch('/user/posts')
-
-
+  const [commentText, setCommentText] = useState<string>("")
+  console.log(user?.id,data?.posts)
   const handleLogout = () => {
     // In a real app, this would call an API to logout
     toast( "Logged out")
@@ -55,7 +54,33 @@ export default function DashboardPage() {
     mutate()
     toast("post disliked")
   }
+  const handleCommentChange = (postId: string, text: string) => {
+    setCommentText(text)
+  }
 
+  const handleAddComment = async (postId: string) => {
+
+    try {
+      if (!commentText) {
+        return toast("Comment cannot be empty")
+      }
+      await axiosInstance.put(`/user/post/comment/${postId}`, { content: commentText })
+      // setCommentText((prev) => ({ ...prev, [postId]: "" }))
+      mutate()
+      toast("Comment added")
+    } catch (error) {
+      toast('Error adding comment')
+    }
+  }
+  async function commentDeleteHandler(postId:string,commentId:string){
+    try {
+      await axiosInstance.delete(`/user/post/comment/${postId}/${commentId}`)
+      mutate()      
+      toast("comment deleted")
+    } catch (error) {
+      toast('Error deleting comment')
+    }
+  }
   return (
     <div className="flex min-h-screen flex-col">
       <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -191,6 +216,15 @@ export default function DashboardPage() {
           Share
         </Button>
       </CardFooter>
+      <div className="flex gap-2 w-full">
+        <Input
+          value={commentText}
+          onChange={(e) => handleCommentChange(post.id, e.target.value)}
+          placeholder="Add a comment..."
+          className="flex-1"
+        />
+        <Button onClick={() => handleAddComment(post.id)}>Post</Button>
+      </div>
       {post.comments.length > 0 && (
         <div className="p-4 border-t">
           <h3 className="text-sm font-semibold mb-2">Comments</h3>
@@ -211,6 +245,10 @@ export default function DashboardPage() {
                     <button className="flex items-center gap-1" >
                       👎 {comment.dislikeCount}
                     </button>
+                    {
+                      comment.authorId.id===(user?.id as string)&&
+                      <Trash2 size={15} onClick={()=>commentDeleteHandler(post.id,comment.id)} />
+                    }
                   </div>
                 </div>
               </div>
