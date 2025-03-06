@@ -10,7 +10,7 @@ import { CustomError } from "@utils/custom.error";
 import userRouter from "@routes/user.routes";
 import { IUser } from "@models/user.model";
 import { existsSync, mkdirSync } from "fs";
-// import cors from "cors"
+import cors from "cors"
 import path from "path"
 dotenv.config();
 connectDB();
@@ -27,11 +27,15 @@ declare global {
   }
 }
 const app = express();
+app.use(cors({
+  origin:"http://localhost:3000",
+  methods:['GET','POST','PUT','DELETE'],
+  credentials:true
+}))
 if(!existsSync(path.join(__dirname,"./uploads"))){
   mkdirSync(path.join(__dirname,"./uploads"))
 }
 setupSwagger(app);
-// app.use(cors())
 app.use(express.json());
 
 /*

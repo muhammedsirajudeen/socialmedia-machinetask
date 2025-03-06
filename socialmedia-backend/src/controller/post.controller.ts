@@ -84,6 +84,14 @@ export class PostController{
             next(error)
         }
     }
+    async GetAllPosts(req:Request,res:Response,next:NextFunction){
+        try {
+            const posts=await this.service.findAllAndPopulate()
+            res.status(HttpStatus.OK).json({message:HttpMessage.OK,posts})
+        } catch (error) {
+            next(error)
+        }
+    }
     async GetPostsByUser(req:Request,res:Response,next:NextFunction){
         try {
             const userId=req.user

@@ -14,7 +14,7 @@ userRouter.put('/post/like/:id',UserMiddleware,PostController.likeAPost.bind(Pos
 userRouter.put('/post/dislike/:id',UserMiddleware,PostController.dislikeAPost.bind(PostController))
 userRouter.get('/post',UserMiddleware,PostController.GetPostsByUser.bind(PostController))
 userRouter.get('/post/:id',UserMiddleware,PostController.GetPost.bind(PostController))
-
+userRouter.get('/posts',UserMiddleware,PostController.GetAllPosts.bind(PostController))
 
 userRouter.put('/post/comment/:id',UserMiddleware,PostController.AddComments.bind(PostController))
 userRouter.delete('/post/comment/:postId/:commentId',UserMiddleware,PostController.RemoveComment.bind(PostController))

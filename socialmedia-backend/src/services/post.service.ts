@@ -101,4 +101,7 @@ export class PostService extends BaseService<IPost, PostRepository> {
         })
         return await this.repository.pull(postId,'comments',{_id:new mongoose.Types.ObjectId(commentId)})
     }
+    async findAllAndPopulate(){
+        return this.repository.findAndPopulate()
+    }
 }

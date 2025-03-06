@@ -5,7 +5,7 @@ services:
     build:
       context: .
       dockerfile: ./socialmedia-backend/Dockerfile.dev
-    expose:
+    ports:
       - "4000"
     volumes:
       - ./socialmedia-backend:/app

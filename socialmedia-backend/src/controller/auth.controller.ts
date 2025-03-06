@@ -5,6 +5,7 @@ import { HttpStatus } from "@utils/HttpStatus";
 import { ExpiryOptions, TokenGenerator, TokenVerification } from "@utils/token.helper";
 import { CustomError } from "@utils/custom.error";
 import { registerSchema } from "shared";
+import { logger } from "@config/logger";
 export class AuthController {
     service: UserService
     constructor(service: UserService) {
@@ -12,6 +13,7 @@ export class AuthController {
     }
     async Signup(req: Request, res: Response, next: NextFunction) {
         try {
+            logger.info(req.url)
             const userRequest: IUser = req.body
             registerSchema.parse(userRequest)
             const user = await this.service.create(userRequest)
