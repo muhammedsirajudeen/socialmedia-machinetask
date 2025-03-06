@@ -9,7 +9,6 @@ export default function UserComponent(){
     useEffect(()=>{
       async function userFetcher(){
         const response=await axiosInstance.get('/auth/verify')
-        console.log(response.data)
         dispatch(login(response.data.user))
       }
       userFetcher()
