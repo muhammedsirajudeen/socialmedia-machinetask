@@ -12,7 +12,12 @@ export class PostController{
     }
     async createPost(req:Request,res:Response,next:NextFunction){
         try {
+            const user=req.user
+            if(!user){
+                throw new CustomError(HttpMessage.UNAUTHORIZED,HttpStatus.UNAUTHORIZED)
+            }
             const postRequest:IPost=req.body
+            postRequest.authorId=user.id
             const newPost=await this.service.create(postRequest)
             res.status(HttpStatus.CREATED).json({message:HttpStatus.CREATED,post:newPost})
         } catch (error) {

@@ -24,6 +24,7 @@ userRouter.put('/profile/:id',UserMiddleware,UserControllerInstance.UpdateProfil
 userRouter.put('/follow/:id',UserMiddleware,UserControllerInstance.FollowSomeone.bind(AuthControllerInstance))
 userRouter.put('/unfollow/:id',UserMiddleware,UserControllerInstance.UnfollowSomeone.bind(AuthControllerInstance))
 
+// get profile details
 userRouter.post('/uploads',UserMiddleware,upload.array('images'),UserControllerInstance.Uploads)
 
 export default userRouter

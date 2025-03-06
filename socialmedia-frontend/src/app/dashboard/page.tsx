@@ -13,25 +13,24 @@ import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { CreatePostDialog } from "@/components/create-post-dialog"
-import {toast} from "sonner"
+import { toast } from "sonner"
 import { useAppSelector } from "@/store/hooks"
 import { useFetch } from "../utils/useFetch"
 import { PopulatedPost } from "../types"
 import axiosInstance from "../utils/axios.instance"
-interface Response{
-  posts:PopulatedPost[]
+interface Response {
+  posts: PopulatedPost[]
 }
 export default function DashboardPage() {
   const router = useRouter()
   const [searchQuery, setSearchQuery] = useState("")
   const [isCreatePostOpen, setIsCreatePostOpen] = useState(false)
-  const user=useAppSelector((state)=>state.global.user)
-  const {data,isLoading,mutate}:{data:Response|undefined,isLoading:boolean,mutate:()=>void}=useFetch('/user/posts')
-  const [commentText, setCommentText] = useState<string>("")
-  console.log(user?.id,data?.posts)
+  const user = useAppSelector((state) => state.global.user)
+  const { data, isLoading, mutate }: { data: Response | undefined, isLoading: boolean, mutate: () => void } = useFetch('/user/posts')
+  const [commentTexts, setCommentTexts] = useState<{ [key: string]: string }>({}); console.log(user?.id, data?.posts)
   const handleLogout = () => {
     // In a real app, this would call an API to logout
-    toast( "Logged out")
+    toast("Logged out")
     router.push("/")
   }
 
@@ -41,46 +40,36 @@ export default function DashboardPage() {
     toast("Search results")
   }
 
-  const handleLikePost = async  (postId: string) => {
+  const handleLikePost = async (postId: string) => {
     // In a real app, this would call an API to like/unlike a post
-    const response=await axiosInstance.put(`/user/post/like/${postId}`)
+    const response = await axiosInstance.put(`/user/post/like/${postId}`)
     console.log(response.data)
     mutate()
     toast("Post liked")
   }
-  const handleDislikePost=async (postId:string)=>{
-    const response=await axiosInstance.put(`/user/post/dislike/${postId}`)
+  const handleDislikePost = async (postId: string) => {
+    const response = await axiosInstance.put(`/user/post/dislike/${postId}`)
     console.log(response.data)
     mutate()
     toast("post disliked")
   }
   const handleCommentChange = (postId: string, text: string) => {
-    setCommentText(text)
-  }
+    setCommentTexts((prev) => ({ ...prev, [postId]: text }));
+  };
 
   const handleAddComment = async (postId: string) => {
+    if (!commentTexts[postId]) return toast("Comment cannot be empty");
+    await axiosInstance.put(`/user/post/comment/${postId}`, { content: commentTexts[postId] });
+    setCommentTexts((prev) => ({ ...prev, [postId]: "" }));
+    mutate();
+    toast("Comment added");
+  };
 
-    try {
-      if (!commentText) {
-        return toast("Comment cannot be empty")
-      }
-      await axiosInstance.put(`/user/post/comment/${postId}`, { content: commentText })
-      // setCommentText((prev) => ({ ...prev, [postId]: "" }))
-      mutate()
-      toast("Comment added")
-    } catch (error) {
-      toast('Error adding comment')
-    }
-  }
-  async function commentDeleteHandler(postId:string,commentId:string){
-    try {
-      await axiosInstance.delete(`/user/post/comment/${postId}/${commentId}`)
-      mutate()      
-      toast("comment deleted")
-    } catch (error) {
-      toast('Error deleting comment')
-    }
-  }
+  const handleDeleteComment = async (postId: string, commentId: string) => {
+    await axiosInstance.delete(`/user/post/comment/${postId}/${commentId}`);
+    mutate();
+    toast("Comment deleted");
+  };
   return (
     <div className="flex min-h-screen flex-col">
       <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -161,106 +150,105 @@ export default function DashboardPage() {
               <TabsTrigger value="trending">Trending</TabsTrigger>
             </TabsList>
             <TabsContent value="feed" className="space-y-4 mt-4">
-            {isLoading ? (
-  <p>Loading posts...</p>
-) : data?.posts.length ? (
-  data.posts.map((post) => (
-    <Card key={post.id}>
-      <CardHeader className="flex flex-row items-center gap-4 p-4">
-        <Avatar>
-          <AvatarFallback>{post.authorId.username.slice(0, 2).toUpperCase()}</AvatarFallback>
-        </Avatar>
-        <div className="grid gap-1">
-          <p className="text-sm font-medium leading-none">@{post.authorId.username}</p>
-          <p className="text-sm text-muted-foreground">{new Date(post.createdAt).toLocaleString()}</p>
-        </div>
-      </CardHeader>
-      <CardContent className="p-4 pt-0">
-        <p>{post.content}</p>
-        {post.media?.map((mediaItem, index) => (
-          <div key={index} className="mt-2">
-            {mediaItem.type === "image" ? (
-              <img src={mediaItem.url} alt="Post media" className="w-96 h-96 rounded-lg" />
-            ) : (
-              <video controls className="w-full rounded-lg">
-                <source src={mediaItem.url} type="video/mp4" />
-                Your browser does not support the video tag.
-              </video>
-            )}
-          </div>
-        ))}
-      </CardContent>
-      <CardFooter className="flex justify-between p-4">
-        <div className="flex items-center gap-4">
-          <Button
-            variant="ghost"
-            size="sm"
-            className={post.likes.length ? "text-primary" : ""}
-            onClick={() => handleLikePost(post.id)}
-          >
-            👍 {post.likes.length}
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            className={post.dislikes.length ? "text-red-500" : ""}
-            onClick={() => handleDislikePost(post.id)}
-          >
-            👎 {post.dislikeCount}
-          </Button>
-          <Button variant="ghost" size="sm">
-            💬 {post.comments.length}
-          </Button>
-        </div>
-        <Button variant="ghost" size="sm">
-          Share
-        </Button>
-      </CardFooter>
-      <div className="flex gap-2 w-full">
-        <Input
-          value={commentText}
-          onChange={(e) => handleCommentChange(post.id, e.target.value)}
-          placeholder="Add a comment..."
-          className="flex-1"
-        />
-        <Button onClick={() => handleAddComment(post.id)}>Post</Button>
-      </div>
-      {post.comments.length > 0 && (
-        <div className="p-4 border-t">
-          <h3 className="text-sm font-semibold mb-2">Comments</h3>
-          <div className="space-y-3">
-            {post.comments.map((comment) => (
-              <div key={comment.id} className="flex gap-2">
-                <Avatar className="h-6 w-6">
-                  <AvatarFallback>{comment.authorId.username.slice(0, 2).toUpperCase()}</AvatarFallback>
-                </Avatar>
-                <div className="bg-gray-100 p-2 rounded-lg w-full">
-                  <p className="text-xs" >{comment.authorId.username}</p>
-                  <p className="text-sm">{comment.content}</p>
-                  <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
-                    <span>{new Date(comment.createdAt).toLocaleString()}</span>
-                    <button className="flex items-center gap-1" >
-                      👍 {comment.likeCount}
-                    </button>
-                    <button className="flex items-center gap-1" >
-                      👎 {comment.dislikeCount}
-                    </button>
-                    {
-                      comment.authorId.id===(user?.id as string)&&
-                      <Trash2 size={15} onClick={()=>commentDeleteHandler(post.id,comment.id)} />
-                    }
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-    </Card>
-  ))
-) : (
-  <p>No posts available.</p>
-)}
+              {isLoading ? (
+                <p>Loading posts...</p>
+              ) : data?.posts.length ? (
+                data.posts.map((post) => (
+                  <Card key={post.id}>
+                    <CardHeader className="flex flex-row items-center gap-4 p-4">
+                      <Avatar>
+                        <AvatarFallback>{post.authorId.username.slice(0, 2).toUpperCase()}</AvatarFallback>
+                      </Avatar>
+                      <div className="grid gap-1">
+                        <p className="text-sm font-medium leading-none">@{post.authorId.username}</p>
+                        <p className="text-sm text-muted-foreground">{new Date(post.createdAt).toLocaleString()}</p>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="p-4 pt-0">
+                      <p>{post.content}</p>
+                      {post.media?.map((mediaItem, index) => (
+                        <div key={index} className="mt-2">
+                          {mediaItem.type === "image" ? (
+                            <img src={mediaItem.url} alt="Post media" className="w-96 h-96 rounded-lg" />
+                          ) : (
+                            <video controls className="w-full rounded-lg">
+                              <source src={mediaItem.url} type="video/mp4" />
+                              Your browser does not support the video tag.
+                            </video>
+                          )}
+                        </div>
+                      ))}
+                    </CardContent>
+                    <CardFooter className="flex justify-between p-4">
+                      <div className="flex items-center gap-4">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className={post.likes.length ? "text-primary" : ""}
+                          onClick={() => handleLikePost(post.id)}
+                        >
+                          👍 {post.likes.length}
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className={post.dislikes.length ? "text-red-500" : ""}
+                          onClick={() => handleDislikePost(post.id)}
+                        >
+                          👎 {post.dislikeCount}
+                        </Button>
+                        <Button variant="ghost" size="sm">
+                          💬 {post.comments.length}
+                        </Button>
+                      </div>
+                      <Button variant="ghost" size="sm">
+                        Share
+                      </Button>
+                    </CardFooter>
+                    <div className="flex gap-2 w-full">
+                      <Input
+                        value={commentTexts[post.id] || ""}
+                        onChange={(e) => handleCommentChange(post.id, e.target.value)}
+                        placeholder="Add a comment..."
+                      />
+                      <Button onClick={() => handleAddComment(post.id)}>Post</Button>
+                    </div>
+                    {post.comments.length > 0 && (
+                      <div className="p-4 border-t">
+                        <h3 className="text-sm font-semibold mb-2">Comments</h3>
+                        <div className="space-y-3">
+                          {post.comments.map((comment) => (
+                            <div key={comment.id} className="flex gap-2">
+                              <Avatar className="h-6 w-6">
+                                <AvatarFallback>{comment.authorId.username.slice(0, 2).toUpperCase()}</AvatarFallback>
+                              </Avatar>
+                              <div className="bg-gray-100 p-2 rounded-lg w-full">
+                                <p className="text-xs" >{comment.authorId.username}</p>
+                                <p className="text-sm">{comment.content}</p>
+                                <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
+                                  <span>{new Date(comment.createdAt).toLocaleString()}</span>
+                                  <button className="flex items-center gap-1" >
+                                    👍 {comment.likeCount}
+                                  </button>
+                                  <button className="flex items-center gap-1" >
+                                    👎 {comment.dislikeCount}
+                                  </button>
+                                  {
+                                    comment.authorId.id === (user?.id as string) &&
+                                    <Trash2 size={15} onClick={() => handleDeleteComment(post.id, comment.id)} />
+                                  }
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </Card>
+                ))
+              ) : (
+                <p>No posts available.</p>
+              )}
 
             </TabsContent>
             <TabsContent value="following" className="space-y-4 mt-4">
@@ -276,7 +264,7 @@ export default function DashboardPage() {
           </Tabs>
         </main>
       </div>
-      <CreatePostDialog open={isCreatePostOpen} onOpenChange={setIsCreatePostOpen} />
+      <CreatePostDialog mutate={mutate} open={isCreatePostOpen} onOpenChange={setIsCreatePostOpen} />
     </div>
   )
 }

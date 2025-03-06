@@ -1,9 +1,11 @@
 "use client"
 
-import type React from "react"
-
 import { useState } from "react"
-
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import * as z from "zod"
+import { toast } from "sonner"
+import axiosInstance from "@/app/utils/axios.instance"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -14,43 +16,91 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { Textarea } from "@/components/ui/textarea"
-import {toast} from "sonner"
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form"
+import { Input } from "@/components/ui/input"
+
+// 🔹 Zod Schema Validation
+const postSchema = z.object({
+  content: z.string().max(500, "Content must be less than 500 characters").optional(),
+  image: z
+    .instanceof(File)
+    .refine((file) => file?.type.startsWith("image/"), { message: "Only image files are allowed!" })
+    .optional(),
+})
+
+// 🔹 TypeScript Interface
+type PostFormValues = z.infer<typeof postSchema>
+
 interface CreatePostDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
+  mutate:()=>void
 }
 
-export function CreatePostDialog({ open, onOpenChange }: CreatePostDialogProps) {
-  const [content, setContent] = useState("")
+export function CreatePostDialog({ open, onOpenChange,mutate }: CreatePostDialogProps) {
+  const [preview, setPreview] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const form = useForm<PostFormValues>({
+    resolver: zodResolver(postSchema),
+    defaultValues: {
+      content: "",
+      image: undefined,
+    },
+  })
 
-    if (!content.trim()) {
-      toast("Error")
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>, fieldChange: (file: File | undefined) => void) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      if (!file.type.startsWith("image/")) {
+        toast("Only image files are allowed!")
+        return
+      }
+      fieldChange(file)
+      setPreview(URL.createObjectURL(file)) // Create preview
+    }
+  }
+
+  const handleSubmit = async (data: PostFormValues) => {
+    if (!data.content?.trim() && !data.image) {
+      toast("Please add content or an image")
       return
     }
 
     setIsLoading(true)
 
     try {
-      // In a real app, this would be an API call to create a post
-      // const response = await fetch('/api/posts', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({ content })
-      // })
+      let mediaUrl = null
+      if (data.image) {
+        const formData = new FormData()
+        formData.set("images", data.image)
 
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000))
+        const uploadResponse = await axiosInstance.post("/user/uploads", formData)
+        mediaUrl = uploadResponse.data.media
+      }
 
-      toast("Post created")
+      // Send post request
+      await axiosInstance.post("/user/post", {
+        content: data.content,
+        media: mediaUrl,
+      })
 
-      setContent("")
+      toast("Post created successfully!")
+
+      // Reset form
+      form.reset()
+      setPreview(null)
+      mutate()
       onOpenChange(false)
     } catch (error) {
-      toast("Error")
+      toast("Error creating post")
     } finally {
       setIsLoading(false)
     }
@@ -59,30 +109,62 @@ export function CreatePostDialog({ open, onOpenChange }: CreatePostDialogProps) 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px]">
-        <form onSubmit={handleSubmit}>
-          <DialogHeader>
-            <DialogTitle>Create Post</DialogTitle>
-            <DialogDescription>Share your thoughts with your followers.</DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <Textarea
-              placeholder="What's on your mind?"
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              className="min-h-[120px]"
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+            <DialogHeader>
+              <DialogTitle>Create Post</DialogTitle>
+              <DialogDescription>Share your thoughts and an image.</DialogDescription>
+            </DialogHeader>
+
+            {/* Content Input */}
+            <FormField
+              control={form.control}
+              name="content"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Content</FormLabel>
+                  <FormControl>
+                    <Textarea placeholder="What's on your mind?" {...field} className="min-h-[120px]" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-          </div>
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              Cancel
-            </Button>
-            <Button type="submit" disabled={isLoading}>
-              {isLoading ? "Posting..." : "Post"}
-            </Button>
-          </DialogFooter>
-        </form>
+
+            {/* Image Upload */}
+            <FormField
+              control={form.control}
+              name="image"
+              render={({ field: { onChange } }) => (
+                <FormItem>
+                  <FormLabel>Image</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => handleImageChange(e, onChange)}
+                      className="file:mr-4 file:py-2 file:px-4 file:border file:rounded-lg file:border-gray-300 file:bg-gray-100 file:text-gray-700"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Image Preview */}
+            {preview && <img src={preview} alt="Preview" className="w-full h-auto rounded-lg mt-2" />}
+
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={isLoading}>
+                {isLoading ? "Posting..." : "Post"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </Form>
       </DialogContent>
     </Dialog>
   )
 }
-
