@@ -37,6 +37,29 @@ export class PostRepository extends BaseRepository<IPost>{
 
         const transformedResults = results.map(transformId);
         return transformedResults
+    }async findByUserAndPopulate(userId:string){
+        //tosolve: the problem is the id here
+        const results= await this._model.find({authorId:userId}).populate([{path:'authorId',select:'-password'},{path:'comments.authorId',select:'_id id username email profile_picture'}]).lean()
+        //@ts-ignore
+        function transformId(obj: any) {
+            if (Array.isArray(obj)) {
+            return obj.map(transformId);
+            } else if (obj && typeof obj === 'object') {
+            const newObj: any = {};
+            for (const key in obj) {
+                if (key === '_id') {
+                newObj['id'] = obj[key];
+                } else if (key !== 'id') {
+                newObj[key] = transformId(obj[key]);
+                }
+            }
+            return newObj;
+            }
+            return obj;
+        }
+
+        const transformedResults = results.map(transformId);
+        return transformedResults
     }
 }
 

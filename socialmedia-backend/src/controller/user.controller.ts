@@ -108,5 +108,20 @@ export class UserController {
             next(error)
         }
     }
+    async GetProfile(req:Request,res:Response,next:NextFunction){
+        try {
+            const {id}=req.params
+            if(!id || !isObjectIdOrHexString(id)){
+                throw new CustomError(HttpMessage.UNAUTHORIZED,HttpStatus.UNAUTHORIZED)
+            }
+            const user=(await this.service.findById(id))
+            if(!user){
+                throw new CustomError(HttpMessage.NOT_FOUND,HttpStatus.NOT_FOUND)
+            }
+            res.status(HttpStatus.OK).json({message:HttpMessage.OK,user:{...user.toObject(),password:undefined}})
+        } catch (error) {
+            next(error)
+        }
+    }
 
 }

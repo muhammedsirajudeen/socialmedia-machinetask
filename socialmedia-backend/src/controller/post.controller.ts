@@ -103,7 +103,7 @@ export class PostController{
             if(!userId){
                 throw new CustomError(HttpMessage.UNAUTHORIZED,HttpStatus.UNAUTHORIZED)
             }
-            const posts=await this.service.findAll({authorId:userId.id})
+            const posts=await this.service.findByUserAndPopulate(userId.id)
             res.status(HttpStatus.OK).json({message:HttpMessage.OK,posts})
         } catch (error) {
             next(error)
