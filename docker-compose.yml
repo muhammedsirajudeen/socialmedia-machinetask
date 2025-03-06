@@ -5,12 +5,12 @@ services:
     build:
       context: .
       dockerfile: ./socialmedia-backend/Dockerfile.dev
-    ports:
-      - "3000"
+    expose:
+      - "4000"
     volumes:
       - ./socialmedia-backend:/app
       - /app/node_modules
-      - /home/vava/Programming/Brototype/boarding_machine_task/shared:/shared:rw
+      - /home/vava/Programming/Brototype/boarding_machine_task/shared:/app/shared:rw
     depends_on:
       - mongo
       - redis

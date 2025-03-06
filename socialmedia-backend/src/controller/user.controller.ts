@@ -70,15 +70,14 @@ export class UserController {
     }
     async Uploads(req:Request,res:Response,next:NextFunction){
         try {
-            console.log(req.files)
             cloudinary.config({ 
                 cloud_name: 'dp0f5mdrj', 
                 api_key: process.env.CLOUDINARY_API, 
                 api_secret: process.env.CLOUDINARY_SECRET // Click 'View API Keys' above to copy your API secret
             });
             const files = req.files as Express.Multer.File[];
-            if (!files) {
-                throw new CustomError(HttpMessage.NOT_FOUND, HttpStatus.NOT_FOUND);
+            if (!files || files.length===0) {
+                throw new CustomError(HttpMessage.BAD_REQUEST, HttpStatus.BAD_REQUEST);
             }
 
             const fileNames=files.map((file)=>file.filename)
@@ -100,25 +99,14 @@ export class UserController {
             for(let i=0;i<fileNames.length;i++){
                 await unlink(path.join(__dirname,"../uploads",fileNames[i]))
             }
-            res.status(HttpStatus.OK).json({message:HttpMessage.OK,urls})
+            const finalResult:{type:'image',url:string}[]=[]
+            for(let url of urls){
+                finalResult.push({type:'image',url:url})
+            }
+            res.status(HttpStatus.OK).json({message:HttpMessage.OK,media:finalResult})
         } catch (error) {
             next(error)
         }
     }
-    // console.log(file)
-    // const result= writeFileSync(path.join(__dirname,"../public",file.originalname),file.buffer)
-    // const uploadResult = await cloudinary.uploader
-    // .upload(
-    //     path.join(__dirname,"../public",file.originalname), {
-    //         public_id: file.originalname,
-    //     }
-    // )
-    // .catch((error) => {
-    //     console.log(error);
-    // });
-    // if(!uploadResult){
-    //     res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: HttpStatusMessage[HttpStatus.INTERNAL_SERVER_ERROR] })
-    //     return
-    // }
 
 }
