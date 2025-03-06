@@ -30,6 +30,7 @@ export interface Post {
     createdAt: Date;
     updatedAt?: Date;
     likes: string[];
+    dislikes: string[]
     likeCount: number;
     dislikeCount: number;
     commentsCount: number;

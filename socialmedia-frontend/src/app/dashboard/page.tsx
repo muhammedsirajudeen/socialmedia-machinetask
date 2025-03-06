@@ -44,6 +44,9 @@ export default function DashboardPage() {
     // In a real app, this would call an API to like/unlike a post
     toast("Post liked")
   }
+  const handleDislikePost=(postId:string)=>{
+    toast("post disliked")
+  }
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -126,45 +129,93 @@ export default function DashboardPage() {
             </TabsList>
             <TabsContent value="feed" className="space-y-4 mt-4">
             {isLoading ? (
-                <p>Loading posts...</p>
-              ) : data?.posts.length ? (
-                data.posts.map((post) => (
-                  <Card key={post.id}>
-                    <CardHeader className="flex flex-row items-center gap-4 p-4">
-                      <Avatar>
-                        <AvatarFallback>{post.authorId.username.slice(0, 2).toUpperCase()}</AvatarFallback>
-                      </Avatar>
-                      <div className="grid gap-1">
-                        <p className="text-sm font-medium leading-none">@{post.authorId.username}</p>
-                        <p className="text-sm text-muted-foreground">{new Date(post.createdAt).toLocaleString()}</p>
-                      </div>
-                    </CardHeader>
-                    <CardContent className="p-4 pt-0">
-                      <p>{post.content}</p>
-                    </CardContent>
-                    <CardFooter className="flex justify-between p-4">
-                      <div className="flex items-center gap-4">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className={post.likes.length ? "text-primary" : ""}
-                          onClick={() => handleLikePost(post.id)}
-                        >
-                          👍 {post.likes.length}
-                        </Button>
-                        <Button variant="ghost" size="sm">
-                          💬 {post.comments.length}
-                        </Button>
-                      </div>
-                      <Button variant="ghost" size="sm">
-                        Share
-                      </Button>
-                    </CardFooter>
-                  </Card>
-                ))
-              ) : (
-                <p>No posts available.</p>
-              )}
+  <p>Loading posts...</p>
+) : data?.posts.length ? (
+  data.posts.map((post) => (
+    <Card key={post.id}>
+      <CardHeader className="flex flex-row items-center gap-4 p-4">
+        <Avatar>
+          <AvatarFallback>{post.authorId.username.slice(0, 2).toUpperCase()}</AvatarFallback>
+        </Avatar>
+        <div className="grid gap-1">
+          <p className="text-sm font-medium leading-none">@{post.authorId.username}</p>
+          <p className="text-sm text-muted-foreground">{new Date(post.createdAt).toLocaleString()}</p>
+        </div>
+      </CardHeader>
+      <CardContent className="p-4 pt-0">
+        <p>{post.content}</p>
+        {post.media?.map((mediaItem, index) => (
+          <div key={index} className="mt-2">
+            {mediaItem.type === "image" ? (
+              <img src={mediaItem.url} alt="Post media" className="w-96 h-96 rounded-lg" />
+            ) : (
+              <video controls className="w-full rounded-lg">
+                <source src={mediaItem.url} type="video/mp4" />
+                Your browser does not support the video tag.
+              </video>
+            )}
+          </div>
+        ))}
+      </CardContent>
+      <CardFooter className="flex justify-between p-4">
+        <div className="flex items-center gap-4">
+          <Button
+            variant="ghost"
+            size="sm"
+            className={post.likes.length ? "text-primary" : ""}
+            onClick={() => handleLikePost(post.id)}
+          >
+            👍 {post.likes.length}
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className={post.dislikes.length ? "text-red-500" : ""}
+            onClick={() => handleDislikePost(post.id)}
+          >
+            👎 {post.dislikeCount}
+          </Button>
+          <Button variant="ghost" size="sm">
+            💬 {post.comments.length}
+          </Button>
+        </div>
+        <Button variant="ghost" size="sm">
+          Share
+        </Button>
+      </CardFooter>
+      {post.comments.length > 0 && (
+        <div className="p-4 border-t">
+          <h3 className="text-sm font-semibold mb-2">Comments</h3>
+          <div className="space-y-3">
+            {post.comments.map((comment) => (
+              <div key={comment.id} className="flex gap-2">
+                <Avatar className="h-6 w-6">
+                  <AvatarFallback>{comment.authorId.username.slice(0, 2).toUpperCase()}</AvatarFallback>
+                </Avatar>
+                <div className="bg-gray-100 p-2 rounded-lg w-full">
+                  <p className="text-xs" >{comment.authorId.username}</p>
+                  <p className="text-sm">{comment.content}</p>
+                  <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
+                    <span>{new Date(comment.createdAt).toLocaleString()}</span>
+                    <button className="flex items-center gap-1" >
+                      👍 {comment.likeCount}
+                    </button>
+                    <button className="flex items-center gap-1" >
+                      👎 {comment.dislikeCount}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </Card>
+  ))
+) : (
+  <p>No posts available.</p>
+)}
+
             </TabsContent>
             <TabsContent value="following" className="space-y-4 mt-4">
               <div className="flex flex-col items-center justify-center py-12 text-center">
