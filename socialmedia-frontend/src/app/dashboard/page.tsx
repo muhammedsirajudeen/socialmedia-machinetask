@@ -17,6 +17,8 @@ import {toast} from "sonner"
 import { useAppSelector } from "@/store/hooks"
 import { useFetch } from "../utils/useFetch"
 import { PopulatedPost } from "../types"
+import axiosInstance from "../utils/axios.instance"
+import { mutate } from "swr"
 interface Response{
   posts:PopulatedPost[]
 }
@@ -25,7 +27,7 @@ export default function DashboardPage() {
   const [searchQuery, setSearchQuery] = useState("")
   const [isCreatePostOpen, setIsCreatePostOpen] = useState(false)
   const user=useAppSelector((state)=>state.global.user)
-  const {data,isLoading}:{data:Response|undefined,isLoading:boolean}=useFetch('/user/posts')
+  const {data,isLoading,mutate}:{data:Response|undefined,isLoading:boolean,mutate:()=>void}=useFetch('/user/posts')
 
 
   const handleLogout = () => {
@@ -40,11 +42,17 @@ export default function DashboardPage() {
     toast("Search results")
   }
 
-  const handleLikePost = (postId: string) => {
+  const handleLikePost = async  (postId: string) => {
     // In a real app, this would call an API to like/unlike a post
+    const response=await axiosInstance.put(`/user/post/like/${postId}`)
+    console.log(response.data)
+    mutate()
     toast("Post liked")
   }
-  const handleDislikePost=(postId:string)=>{
+  const handleDislikePost=async (postId:string)=>{
+    const response=await axiosInstance.put(`/user/post/dislike/${postId}`)
+    console.log(response.data)
+    mutate()
     toast("post disliked")
   }
 
