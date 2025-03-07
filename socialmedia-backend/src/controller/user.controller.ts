@@ -21,7 +21,11 @@ export class UserController {
             if(!id ||!user || !isObjectIdOrHexString(id)){
                 throw new CustomError(HttpMessage.BAD_REQUEST,HttpStatus.BAD_REQUEST)
             }
-            const updateProfile:Partial<IUser>={username:req.body.username,email:req.body.email,password:req.body.password}
+            //BOLA prevention
+            if(user.id !== id){
+                throw new CustomError(HttpMessage.UNAUTHORIZED,HttpStatus.UNAUTHORIZED)
+            }
+            const updateProfile:Partial<IUser>={username:req.body.username,email:req.body.email,password:req.body.password,bio:req.body.bio}
             const updatedUser=await this.service.UpdateProfile(id,updateProfile,user.id)
             if(!updatedUser){
                 throw new CustomError(HttpMessage.BAD_REQUEST,HttpStatus.BAD_REQUEST)
