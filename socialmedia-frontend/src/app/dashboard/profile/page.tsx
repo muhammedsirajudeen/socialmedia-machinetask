@@ -52,7 +52,7 @@ interface UserResponse {
 export default function ProfilePage() {
   const userId = useAppSelector((state) => state.global.user?.id)
   const { data, isLoading, mutate }: UserResponse = useFetch(`/user/profile/${userId}`)
-  const { data: postData, isLoading: isPostsLoading, mutate: mutatePostData }: PostResponse = useFetch(`/user/post`)
+  const { data: postData, isLoading: isPostsLoading, mutate: mutatePostData }: PostResponse = useFetch(`/user/posts/${userId}`)
   const [isEditing, setIsEditing] = useState(false)
   const [editedUser, setEditedUser] = useState<IUser | undefined>(data?.user)
   

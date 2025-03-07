@@ -12,7 +12,7 @@ userRouter.put('/post/:id',UserMiddleware,PostController.updatePost.bind(PostCon
 userRouter.delete('/post/:id',UserMiddleware,PostController.deletePost.bind(PostController))
 userRouter.put('/post/like/:id',UserMiddleware,PostController.likeAPost.bind(PostController))
 userRouter.put('/post/dislike/:id',UserMiddleware,PostController.dislikeAPost.bind(PostController))
-userRouter.get('/post',UserMiddleware,PostController.GetPostsByUser.bind(PostController))
+userRouter.get('/posts/:id',UserMiddleware,PostController.GetPostsByUser.bind(PostController))
 userRouter.get('/post/:id',UserMiddleware,PostController.GetPost.bind(PostController))
 userRouter.get('/posts',UserMiddleware,PostController.GetAllPosts.bind(PostController))
 

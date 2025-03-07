@@ -70,6 +70,9 @@ export default function DashboardPage() {
     mutate();
     toast("Comment deleted");
   };
+  const userprofilenavHandler=(id:string)=>{
+    router.push(`/dashboard/profile/${id}`)
+  }
   return (
     <div className="flex min-h-screen flex-col">
       <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -156,7 +159,7 @@ export default function DashboardPage() {
                 data.posts.map((post) => (
                   <Card key={post.id}>
                     <CardHeader className="flex flex-row items-center gap-4 p-4">
-                      <Avatar>
+                      <Avatar onClick={()=>userprofilenavHandler(post.authorId.id)} >
                         <AvatarFallback>{post.authorId.username.slice(0, 2).toUpperCase()}</AvatarFallback>
                       </Avatar>
                       <div className="grid gap-1">
