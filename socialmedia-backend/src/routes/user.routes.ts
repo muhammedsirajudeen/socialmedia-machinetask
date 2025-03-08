@@ -12,6 +12,9 @@ userRouter.put('/post/:id',UserMiddleware,PostController.updatePost.bind(PostCon
 userRouter.delete('/post/:id',UserMiddleware,PostController.deletePost.bind(PostController))
 userRouter.put('/post/like/:id',UserMiddleware,PostController.likeAPost.bind(PostController))
 userRouter.put('/post/dislike/:id',UserMiddleware,PostController.dislikeAPost.bind(PostController))
+//get post by following and get post by search
+userRouter.get('/posts/search',UserMiddleware,PostController.GetPostsBySearch.bind(PostController))
+userRouter.get('/posts/following',UserMiddleware,PostController.GetPostsByFollowing.bind(PostController))
 userRouter.get('/posts/:id',UserMiddleware,PostController.GetPostsByUser.bind(PostController))
 userRouter.get('/post/:id',UserMiddleware,PostController.GetPost.bind(PostController))
 userRouter.get('/posts',UserMiddleware,PostController.GetAllPosts.bind(PostController))
@@ -28,5 +31,6 @@ userRouter.put('/unfollow/:id',UserMiddleware,UserControllerInstance.UnfollowSom
 userRouter.get('/profile/:id',UserMiddleware,UserControllerInstance.GetProfile.bind(UserControllerInstance))
 
 userRouter.post('/uploads',UserMiddleware,upload.array('images'),UserControllerInstance.Uploads)
+
 
 export default userRouter

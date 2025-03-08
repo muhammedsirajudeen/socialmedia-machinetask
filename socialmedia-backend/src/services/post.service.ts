@@ -104,6 +104,9 @@ export class PostService extends BaseService<IPost, PostRepository> {
     async findAllAndPopulate(){
         return await this.repository.findAndPopulate()
     }
+    async findBySearchAndPopulate(post:Partial<IPost>){
+        return await this.repository.findBySearchAndPopulate(post)
+    }
     async findByUserAndPopulate(userId:string){
         return await this.repository.findByUserAndPopulate(userId)
     }

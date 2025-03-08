@@ -165,7 +165,13 @@ export class PostController{
             if(!user){
                 throw new CustomError(HttpMessage.UNAUTHORIZED,HttpStatus.UNAUTHORIZED)
             }
-            const following=user.following.map((userId)=>userId.toHexString())
+            const following=user.following.map((userId)=>{
+                if(userId instanceof mongoose.Types.ObjectId){
+                    return userId.toHexString()
+                }else{
+                    return userId as string
+                }
+            })
             if(following.length===0){
                 res.status(HttpStatus.OK).json({message:HttpMessage.OK,posts:[]})
                 return
@@ -177,4 +183,14 @@ export class PostController{
             next(error)
         }
     }
+    async GetPostsBySearch(req:Request,res:Response,next:NextFunction){
+        try {
+            const {search}=req.query
+            const posts=await this.service.findBySearchAndPopulate({content:search as string})
+            res.status(HttpStatus.OK).json({message:HttpMessage.OK,posts:posts})
+        } catch (error) {
+            next(error)
+        }
+    }
+
 }
