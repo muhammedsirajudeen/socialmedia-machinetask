@@ -10,11 +10,12 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from "@/components/ui/input"
 import { toast } from "sonner"
 import axiosInstance from "@/app/utils/axios.instance"
-import { useAppSelector } from "@/store/hooks"
+import { useAppDispatch, useAppSelector } from "@/store/hooks"
 import { useFetch } from "@/app/utils/useFetch"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Skeleton } from "@/components/ui/skeleton"
 import { IUser, PopulatedPost } from "@/app/types"
+import { login } from "@/store/user.slice"
 
 interface PostResponse {
     data: {
@@ -42,6 +43,19 @@ export default function SeeProfile() {
     const { data: postsData, isLoading: postLoading, mutate: postMutate }: PostResponse = useFetch(`/user/posts/${id}`)
     const [isFollowing, setIsFollowing] = useState(false)
     const [commentTexts, setCommentTexts] = useState<CommentTexts>({})
+    const dispatch=useAppDispatch()
+    useEffect(()=>{
+      async function userFetcher(){
+        try {
+          const response=await axiosInstance.get('/auth/verify')
+            console.log(response.data.user)
+            dispatch(login(response.data.user))          
+        } catch (error) {
+          console.log('error',error)
+        }
+      }
+      userFetcher()
+    },[])
     // Check if the current user is following this profile
     useEffect(() => {
         if (data?.user) {

@@ -8,10 +8,15 @@ export default function UserComponent(){
     const dispatch=useAppDispatch()
     useEffect(()=>{
       async function userFetcher(){
-        const response=await axiosInstance.get('/auth/verify')
-        dispatch(login(response.data.user))
+        try {
+          alert('fired')
+          const response=await axiosInstance.get('/auth/verify')
+          dispatch(login(response.data.user))          
+        } catch (error) {
+          console.log('error',error)
+        }
       }
       userFetcher()
-    })
+    },[])
     return<></>
 }
