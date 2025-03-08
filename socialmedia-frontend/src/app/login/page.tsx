@@ -17,7 +17,7 @@ import { useAppDispatch } from "@/store/hooks"
 import { login } from "@/store/user.slice"
 import { useEffect, useState } from "react"
 
-export const loginSchema = z.object({
+ const loginSchema = z.object({
   email: z.string().email("Invalid email format"),
   password: z.string().min(6, "Password must be at least 6 characters"),
 })
