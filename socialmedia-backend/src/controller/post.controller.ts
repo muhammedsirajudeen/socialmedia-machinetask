@@ -91,6 +91,10 @@ export class PostController{
     }
     async GetAllPosts(req:Request,res:Response,next:NextFunction){
         try {
+            const user=req.user
+            if(!user){
+                throw new CustomError(HttpMessage.UNAUTHORIZED,HttpStatus.UNAUTHORIZED)
+            }
             const posts=await this.service.findAllAndPopulate()
             res.status(HttpStatus.OK).json({message:HttpMessage.OK,posts})
         } catch (error) {

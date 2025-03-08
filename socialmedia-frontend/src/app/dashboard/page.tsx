@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { Bell, Delete, Home, LogOut, MessageSquare, Plus, Search, Settings, Trash2, User } from "lucide-react"
@@ -16,8 +16,9 @@ import { CreatePostDialog } from "@/components/create-post-dialog"
 import { toast } from "sonner"
 import { useAppSelector } from "@/store/hooks"
 import { useFetch } from "../utils/useFetch"
-import { PopulatedPost } from "../types"
+import { IUser, PopulatedPost } from "../types"
 import axiosInstance from "../utils/axios.instance"
+import ViewLikes from "@/components/view-likes"
 interface Response {
   posts: PopulatedPost[]
 }
@@ -28,20 +29,23 @@ export default function DashboardPage() {
   const user = useAppSelector((state) => state.global.user)
   const { data, isLoading, mutate }: { data: Response | undefined, isLoading: boolean, mutate: () => void } = useFetch('/user/posts')
   const [commentTexts, setCommentTexts] = useState<{ [key: string]: string }>({}); console.log(user?.id, data?.posts)
+  const [server,setServer]=useState(true)
+  const [likeopen,setLikeopen]=useState(false)
+  const [likes,setLikes]=useState<IUser[]>([])
+  useEffect(()=>{
+    setServer(false)
+  },[])
   const handleLogout = () => {
-    // In a real app, this would call an API to logout
     toast("Logged out")
     router.push("/")
   }
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
-    // In a real app, this would filter posts or call an API
     toast("Search results")
   }
 
   const handleLikePost = async (postId: string) => {
-    // In a real app, this would call an API to like/unlike a post
     const response = await axiosInstance.put(`/user/post/like/${postId}`)
     console.log(response.data)
     mutate()
@@ -73,8 +77,14 @@ export default function DashboardPage() {
   const userprofilenavHandler=(id:string)=>{
     router.push(`/dashboard/profile/${id}`)
   }
+  const viewLikesHandler=(likes:IUser[])=>{
+    console.log(likes)
+    setLikes(likes)
+    setLikeopen(true)
+  }
   return (
     <div className="flex min-h-screen flex-col">
+      <ViewLikes setOpen={setLikeopen} likes={likes} open={likeopen} />
       <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container flex h-14 items-center justify-between">
           <div className="flex items-center gap-2 font-bold">
@@ -102,10 +112,13 @@ export default function DashboardPage() {
               </span>
               <span className="sr-only">Notifications</span>
             </Button>
-            <Avatar className="h-8 w-8">
-              <AvatarImage src={user?.profilePicture} alt={user?.username} />
-              <AvatarFallback>{user?.username.slice(0, 2).toUpperCase()}</AvatarFallback>
-            </Avatar>
+            {
+              !server && 
+                <Avatar className="h-8 w-8">
+                  <AvatarImage src={user?.profilePicture} alt={user?.username} />
+                  <AvatarFallback>{user?.username.slice(0, 2).toUpperCase()}</AvatarFallback>
+                </Avatar>
+            }
           </div>
         </div>
       </header>
@@ -182,6 +195,7 @@ export default function DashboardPage() {
                         </div>
                       ))}
                     </CardContent>
+                    <Button className="ml-4"  size={"sm"} onClick={()=>viewLikesHandler(post.likes)} >view likes</Button>
                     <CardFooter className="flex justify-between p-4">
                       <div className="flex items-center gap-4">
                         <Button
@@ -257,6 +271,7 @@ export default function DashboardPage() {
             <TabsContent value="following" className="space-y-4 mt-4">
               <div className="flex flex-col items-center justify-center py-12 text-center">
                 <p className="text-muted-foreground">Follow more users to see their posts here.</p>
+                in here we show the posts of the users that the current user follows
               </div>
             </TabsContent>
             <TabsContent value="trending" className="space-y-4 mt-4">
