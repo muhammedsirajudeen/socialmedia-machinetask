@@ -1,34 +1,25 @@
 services:
   api:
     build:
-      context: .
-      dockerfile: ./socialmedia-backend/Dockerfile.dev
+      context: ./socialmedia-backend
+      dockerfile: ./Dockerfile.dev
     ports:
       - "4000"
     volumes:
       - ./socialmedia-backend:/app
       - /app/node_modules
-      # - /home/vava/Programming/Brototype/boarding_machine_task/shared:/app/shared:rw
+      - /home/vava/Programming/Brototype/boarding_machine_task/shared:/app/shared:rw
     depends_on:
       - mongo
-      - redis
     env_file:
       - ./socialmedia-backend/.env
-    command: sh -c "npm run build && node dist/server.js"
+    command: sh -c "npm run dev"
   mongo:
     image: mongo
     restart: always
     container_name: mongodb
     ports:
       - "27017:27017"
-
-  redis:
-    image: redis
-    restart: always
-    container_name: redis
-    ports:
-      - "6379:6379"
-
   nginx:
     image: nginx:latest
     restart: always

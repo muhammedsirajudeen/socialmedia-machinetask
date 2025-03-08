@@ -1,7 +1,6 @@
 import express, { Request, Response, NextFunction } from "express";
 import dotenv from "dotenv";
 import connectDB from "@config/db";
-import Redis from "ioredis";
 import authRouter from "@routes/auth.routes";
 import { setupSwagger } from "@swagger/setup";
 import { logger } from "@config/logger";
@@ -15,10 +14,6 @@ import path from "path"
 dotenv.config();
 connectDB();
 // essentially meant to be used later
-const _redis = new Redis({
-  host: process.env.REDIS_HOST,
-  port: Number(process.env.REDIS_PORT),
-});
 declare global {
   namespace Express {
     interface Request {
