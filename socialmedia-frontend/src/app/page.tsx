@@ -1,10 +1,18 @@
+"use client"
 import Link from "next/link"
 import { ArrowRight, CheckCircle, MessageSquare, Search, ThumbsUp, Users } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { useAppSelector } from "@/store/hooks"
+import { useEffect, useState } from "react"
 
 export default function LandingPage() {
+  const [authenticated,setAuthenticated]=useState(false)
+  const isAuthenticated=useAppSelector((state)=>state.global.isAuthenticated)
+  useEffect(()=>{
+    setAuthenticated(isAuthenticated)
+  },[isAuthenticated])
   return (
     <div className="flex min-h-screen flex-col">
       <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -33,15 +41,30 @@ export default function LandingPage() {
               Pricing
             </Link>
           </nav>
-          <div className="flex items-center gap-4">
-            <Link href="/login">
-              <Button variant="ghost" size="sm">
-                Log in
-              </Button>
-            </Link>
-            <Link href="/register">
-              <Button size="sm">Sign up</Button>
-            </Link>
+          <div  className="flex items-center gap-4">
+            {
+              authenticated ? <Link suppressHydrationWarning={true} href="/dashboard">
+                <Button variant="ghost" size="sm">
+                  Dashboard
+                </Button>
+              </Link>
+              :
+              <>
+                <Link suppressHydrationWarning={true} href="/login">
+                  <Button variant="ghost" size="sm">
+                    Log in
+                  </Button>
+                </Link> 
+                <Link suppressHydrationWarning={true} href="/register">
+                  <Button  size="sm">
+                    Register
+                  </Button>
+              </Link> 
+              </>
+
+              
+            }
+
           </div>
         </div>
       </header>

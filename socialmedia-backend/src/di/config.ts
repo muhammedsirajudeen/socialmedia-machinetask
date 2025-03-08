@@ -9,7 +9,7 @@ import { PostService } from "services/post.service";
 import { UserService } from "services/user.service";
 
 const UserRepositoryInstance = new UserRepository(UserModel)
-const UserServiceInstance = new UserService(UserRepositoryInstance)
+export const UserServiceInstance = new UserService(UserRepositoryInstance)
 const AuthControllerInstance = new AuthController(UserServiceInstance)
 
 const PostRepositoryInstance=new PostRepository(PostModel)

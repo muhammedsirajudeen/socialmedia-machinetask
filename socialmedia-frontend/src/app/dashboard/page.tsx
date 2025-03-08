@@ -5,7 +5,7 @@ import type React from "react"
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { Bell, Home, LogOut, MessageSquare, Plus, Search, Settings, Trash2, User } from "lucide-react"
+import { Bell, Home, Loader2, LogOut, MessageSquare, Plus, Search, Settings, Trash2, User } from "lucide-react"
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
@@ -31,7 +31,7 @@ export default function DashboardPage() {
   const user = useAppSelector((state) => state.global.user)
   const { data, isLoading, mutate }: { data: Response | undefined, isLoading: boolean, mutate: () => void } = useFetch('/user/posts')
   const { data: followingPosts, isLoading: followingisLoading, mutate: followingMutate }: { data: Response | undefined, isLoading: boolean, mutate: () => void } = useFetch('/user/posts/following')
-
+  console.log(followingPosts)
   const [commentTexts, setCommentTexts] = useState<{ [key: string]: string }>({})
   const [server, setServer] = useState(true)
   const [likeopen, setLikeopen] = useState(false)
@@ -47,7 +47,29 @@ export default function DashboardPage() {
   const [followingCurrentPage, setFollowingCurrentPage] = useState(1)
   const [searchCurrentPage, setSearchCurrentPage] = useState(1)
   const [postsPerPage, setPostsPerPage] = useState(5)
-  
+  const [isVerifying, setIsVerifying] = useState(true)
+
+    useEffect(() => {
+    async function verifyLoginStatus() {
+      try {
+        const response = await axiosInstance.get('/auth/verify')
+        if (!response.data.user) {
+          router.push('/')
+          // window.location.href = '/dashboard'
+        }
+      } catch (error) {
+        console.error("Verification error:", error)
+      }
+        // } finally {
+      //   setIsVerifying(false)
+      // }
+      setTimeout(()=>{
+        setIsVerifying(false)
+      },1000)
+    }
+    
+    verifyLoginStatus()
+  }, [router])
   useEffect(() => {
     setServer(false)
   }, [])
@@ -66,7 +88,7 @@ export default function DashboardPage() {
     toast("Logged out")
     window.localStorage.clear()
     document.cookie=''
-    router.push("/")
+    window.location.href="/"
   }
 
   const handleSearch = async (e: React.FormEvent) => {
@@ -274,7 +296,16 @@ export default function DashboardPage() {
       )}
     </Card>
   );
-
+  if (isVerifying) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center bg-muted/40">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <p className="text-sm text-muted-foreground">Checking login status...</p>
+        </div>
+      </div>
+    )
+  }
   return (
     <div className="flex min-h-screen flex-col">
       <ViewLikes setOpen={setLikeopen} likes={likes} open={likeopen} />

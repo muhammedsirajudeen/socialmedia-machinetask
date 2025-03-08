@@ -5,7 +5,8 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { MessageSquare } from "lucide-react"
+import { MessageSquare, Loader2 } from "lucide-react"
+import { useState, useEffect } from "react"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
@@ -14,12 +15,15 @@ import { Label } from "@/components/ui/label"
 import { Form, FormField, FormItem, FormControl, FormMessage } from "@/components/ui/form"
 import { toast } from "sonner"
 import { registerSchema } from "shared"
-import axios from "axios"
 import axiosInstance from "../utils/axios.instance"
 import { useAppDispatch } from "@/store/hooks"
 import { login } from "@/store/user.slice"
+
 export default function RegisterPage() {
+  const [isVerifying, setIsVerifying] = useState(true)
   const router = useRouter()
+  const dispatch = useAppDispatch()
+  
   const form = useForm({
     resolver: zodResolver(registerSchema),
     defaultValues: {
@@ -28,20 +32,51 @@ export default function RegisterPage() {
       password: "",
     },
   })
-  const dispatch=useAppDispatch()
 
-  const onSubmit = async (data:z.infer<typeof registerSchema>) => {
+  useEffect(() => {
+    async function verifyLoginStatus() {
+      try {
+        const response = await axiosInstance.get('/auth/verify')
+        if (response.data.user) {
+          router.push('/dashboard')
+          // window.location.href = '/dashboard'
+        }
+      } catch (error) {
+        console.error("Verification error:", error)
+      }
+        // } finally {
+      //   setIsVerifying(false)
+      // }
+      setTimeout(()=>{
+        setIsVerifying(false)
+      },1000)
+    }
+    
+    verifyLoginStatus()
+  }, [router])
+
+  const onSubmit = async (data: z.infer<typeof registerSchema>) => {
     try {
-      const response=await axiosInstance.post('auth/signup',data)
+      const response = await axiosInstance.post('auth/signup', data)
       console.log(response.data)
-      // Simulate API call
       toast("Account created!")
       router.push("/login")
-
       // dispatch(login(response.data.user))
     } catch (error) {
       toast("Registration failed")
     }
+  }
+
+  // Show loading state while verifying
+  if (isVerifying) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center bg-muted/40">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <p className="text-sm text-muted-foreground">Checking login status...</p>
+        </div>
+      </div>
+    )
   }
 
   return (

@@ -5,6 +5,7 @@ import { HttpMessage, HttpStatus } from "@utils/HttpStatus";
 import { CustomError } from "@utils/custom.error";
 import mongoose, { isObjectIdOrHexString } from "mongoose";
 import { logger } from "@config/logger";
+import { UserServiceInstance } from "di/config";
 export class PostController{
     service:PostService
     constructor(service:PostService){
@@ -165,7 +166,11 @@ export class PostController{
             if(!user){
                 throw new CustomError(HttpMessage.UNAUTHORIZED,HttpStatus.UNAUTHORIZED)
             }
-            const following=user.following.map((userId)=>{
+            const dbUser=await UserServiceInstance.findById(user.id)
+            if(!dbUser){
+                throw new CustomError(HttpMessage.UNAUTHORIZED,HttpStatus.UNAUTHORIZED)
+            }
+            const following=dbUser.following.map((userId)=>{
                 if(userId instanceof mongoose.Types.ObjectId){
                     return userId.toHexString()
                 }else{

@@ -5,7 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
-import { MessageSquare, Worm } from "lucide-react"
+import { Loader2, MessageSquare, Worm } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -15,6 +15,7 @@ import { toast } from "sonner"
 import axiosInstance from "../utils/axios.instance"
 import { useAppDispatch } from "@/store/hooks"
 import { login } from "@/store/user.slice"
+import { useEffect, useState } from "react"
 
 export const loginSchema = z.object({
   email: z.string().email("Invalid email format"),
@@ -32,8 +33,30 @@ export default function LoginPage() {
       password: "",
     },
   })
+    const [isVerifying, setIsVerifying] = useState(true)
+  
   const dispatch=useAppDispatch()
-
+  useEffect(() => {
+    async function verifyLoginStatus() {
+      try {
+        const response = await axiosInstance.get('/auth/verify')
+        if (response.data.user) {
+          router.push('/dashboard')
+          // window.location.href = '/dashboard'
+        }
+      } catch (error) {
+        console.error("Verification error:", error)
+      }
+        // } finally {
+      //   setIsVerifying(false)
+      // }
+      setTimeout(()=>{
+        setIsVerifying(false)
+      },1000)
+    }
+    
+    verifyLoginStatus()
+  }, [router])
   const onSubmit = async (data: LoginFormValues) => {
     try {
       const response=await axiosInstance.post('/auth/signin',data)
@@ -45,6 +68,16 @@ export default function LoginPage() {
     } catch (error) {
       toast("Login failed")
     }
+  }
+  if (isVerifying) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center bg-muted/40">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <p className="text-sm text-muted-foreground">Checking login status...</p>
+        </div>
+      </div>
+    )
   }
 
   return (
