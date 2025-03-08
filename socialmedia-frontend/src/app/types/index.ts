@@ -1,4 +1,4 @@
-import {User,Post,Comment} from "shared"
+import {User,Post,Comment} from "@muhammedsirajudeenpersonal/shared"
 
 //this is kind of like recursive types too i guess right
 export interface IUser extends Omit<User,"following"|"followers">{

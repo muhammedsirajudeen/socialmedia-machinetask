@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
   api:
     build:
@@ -10,14 +8,13 @@ services:
     volumes:
       - ./socialmedia-backend:/app
       - /app/node_modules
-      - /home/vava/Programming/Brototype/boarding_machine_task/shared:/app/shared:rw
+      # - /home/vava/Programming/Brototype/boarding_machine_task/shared:/app/shared:rw
     depends_on:
       - mongo
       - redis
     env_file:
       - ./socialmedia-backend/.env
-    command: npm run dev
-
+    command: sh -c "npm run build && node dist/server.js"
   mongo:
     image: mongo
     restart: always

@@ -5,7 +5,7 @@
   "workspaces": [
     "socialmedia-backend",
     "socialmedia-frontend",
-    "shared"
+    "@muhammedsirajudeenpersonal/shared"
   ],
   "dependencies": {
     "dotenv": "^16.4.7"

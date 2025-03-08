@@ -1,5 +1,5 @@
 import mongoose, {  Schema,Document } from "mongoose"
-import { User } from "shared"
+import { User } from "@muhammedsirajudeenpersonal/shared"
 import bcrypt from "bcrypt"
 
 export interface IUser extends Omit<User, "id"|"followers" | "following">, Document {

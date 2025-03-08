@@ -1,5 +1,5 @@
 import mongoose, { Document, Schema } from "mongoose";
-import { Comment, Post } from "shared";
+import { Comment, Post } from "@muhammedsirajudeenpersonal/shared/types/User";
 
 export interface IComment extends Document, Omit<Comment, "id" | "authorId" | "likes"> {
     authorId: mongoose.Types.ObjectId;

@@ -4,7 +4,7 @@ import { UserService } from "services/user.service";
 import { HttpStatus } from "@utils/HttpStatus";
 import { ExpiryOptions, TokenGenerator, TokenVerification } from "@utils/token.helper";
 import { CustomError } from "@utils/custom.error";
-import { loginSchema, registerSchema } from "shared";
+// import { loginSchema, registerSchema } from "@muhammedsirajudeenpersonal/shared";
 import { logger } from "@config/logger";
 export class AuthController {
     service: UserService
@@ -15,7 +15,7 @@ export class AuthController {
         try {
             logger.info(req.url)
             const userRequest: IUser = req.body
-            registerSchema.parse(userRequest)
+            // registerSchema.parse(userRequest)
             const user = await this.service.create(userRequest)
             //honestly we do need DTO's here
             res.status(HttpStatus.CREATED).json({ message: HttpStatus.CREATED, user: { ...user.toObject(), password: undefined } })
@@ -27,7 +27,7 @@ export class AuthController {
         try {
             const userRequest: IUser = req.body
             const user = await this.service.verifyPassword(userRequest)
-            loginSchema.parse(user)
+            // loginSchema.parse(user)
             const accessToken = TokenGenerator({ ...user.toObject(), password: undefined }, ExpiryOptions.access)
             const refreshToken = TokenGenerator({ ...user.toObject(), password: undefined }, ExpiryOptions.refresh)
             res.cookie('refreshToken', refreshToken, {
