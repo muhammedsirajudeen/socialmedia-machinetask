@@ -159,4 +159,22 @@ export class PostController{
             next(error)
         }
     }
+    async GetPostsByFollowing(req:Request,res:Response,next:NextFunction):Promise<void>{
+        try {
+            const user=req.user
+            if(!user){
+                throw new CustomError(HttpMessage.UNAUTHORIZED,HttpStatus.UNAUTHORIZED)
+            }
+            const following=user.following.map((userId)=>userId.toHexString())
+            if(following.length===0){
+                res.status(HttpStatus.OK).json({message:HttpMessage.OK,posts:[]})
+                return
+            }
+            const posts=await this.service.findByFollowingAndPopulate(following)
+            res.status(HttpStatus.OK).json({message:HttpMessage.OK,posts:posts})
+            
+        } catch (error) {
+            next(error)
+        }
+    }
 }

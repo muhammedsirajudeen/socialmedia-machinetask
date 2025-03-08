@@ -1,10 +1,10 @@
-import mongoose, { ObjectId, Schema,Document } from "mongoose"
+import mongoose, {  Schema,Document } from "mongoose"
 import { User } from "shared"
 import bcrypt from "bcrypt"
 
 export interface IUser extends Omit<User, "id"|"followers" | "following">, Document {
-    followers: ObjectId[]
-    following: ObjectId[]
+    followers: mongoose.Types.ObjectId[]
+    following: mongoose.Types.ObjectId[]
     comparePassword(candidatePassword: string): Promise<boolean>;
 }
 
