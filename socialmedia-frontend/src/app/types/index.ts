@@ -1,6 +1,10 @@
 import {User,Post,Comment} from "shared"
 
-export interface IUser extends User{}
+//this is kind of like recursive types too i guess right
+export interface IUser extends Omit<User,"following"|"followers">{
+    following:IUser[]
+    followers:IUser[]
+}
 
 export interface IPost extends Post{}
 

@@ -118,7 +118,7 @@ export class UserController {
             if(!id || !isObjectIdOrHexString(id)){
                 throw new CustomError(HttpMessage.UNAUTHORIZED,HttpStatus.UNAUTHORIZED)
             }
-            const user=(await this.service.findById(id))
+            const user=await this.service.findByIdAndPopulate(id)
             if(!user){
                 throw new CustomError(HttpMessage.NOT_FOUND,HttpStatus.NOT_FOUND)
             }

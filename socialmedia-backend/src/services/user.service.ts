@@ -35,5 +35,8 @@ export class UserService extends BaseService<IUser,UserRepository>{
         return await this.repository.update(id,user)
         
     }
+    async findByIdAndPopulate(userId:string){
+        return await this.repository.findByIdAndPopulatte(userId)
+    }
 
 }

@@ -16,6 +16,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Skeleton } from "@/components/ui/skeleton"
 import { IUser, PopulatedPost } from "@/app/types"
 import { login } from "@/store/user.slice"
+import FollowInfoDialog from "@/components/follow-info-dialog"
 
 interface PostResponse {
     data: {
@@ -43,6 +44,9 @@ export default function SeeProfile() {
     const { data: postsData, isLoading: postLoading, mutate: postMutate }: PostResponse = useFetch(`/user/posts/${id}`)
     const [isFollowing, setIsFollowing] = useState(false)
     const [commentTexts, setCommentTexts] = useState<CommentTexts>({})
+    const [following,setFollowing]=useState<IUser[]>([])
+    const [followers,setFollowers]=useState<IUser[]>([])
+    const [followinfoDialog,setFollowInfoDialog]=useState(false)
     const dispatch=useAppDispatch()
     useEffect(()=>{
       async function userFetcher(){
@@ -60,9 +64,14 @@ export default function SeeProfile() {
     useEffect(() => {
         if (data?.user) {
             console.log(data.user.followers,currentUserId?.id)
-            if (data.user.followers.includes(currentUserId?.id!)) {
-                setIsFollowing(true)
-            }
+            // if (data.user.followers.includes(currentUserId?.id!)) {
+            //     setIsFollowing(true)
+            // }
+            data.user.followers.forEach((follower) => {
+                if (follower.id === currentUserId?.id) {
+                    setIsFollowing(true)
+                }
+            })
         }
     }, [data])
 
@@ -122,6 +131,13 @@ export default function SeeProfile() {
         }
     }
 
+    const viewFollowing=async (followers:Array<IUser>,following:Array<IUser>)=>{
+        console.log(followers,following)
+        setFollowInfoDialog(true)
+        setFollowers(followers)
+        setFollowing(following)
+      }
+    
     const renderLoadingState = () => (
         <div className="space-y-6">
             <div className="flex items-center space-x-4">
@@ -150,7 +166,7 @@ export default function SeeProfile() {
                 </Button>
                 <h1 className="text-2xl font-bold">User Profile</h1>
             </div>
-
+            <FollowInfoDialog setOpen={setFollowInfoDialog} open={followinfoDialog} followers={followers} following={following} />
             <div className="grid gap-6 md:grid-cols-[1fr_2fr] mb-8">
                 <Card className="shadow-md">
                     <CardHeader className="flex flex-row items-center justify-between">
@@ -175,6 +191,7 @@ export default function SeeProfile() {
                                 <p className="text-sm text-muted-foreground">Member since {new Date(data.user.createdAt || Date.now()).toLocaleDateString()}</p>
                             </div>
                         </div>
+                        <Button onClick={()=>viewFollowing(data.user.followers,data.user.following)} size={"sm"} >view following</Button>
 
                         <div className="space-y-4">
                             <div>
@@ -292,7 +309,7 @@ export default function SeeProfile() {
                                         <Button
                                             variant="ghost"
                                             size="sm"
-                                            className={post.likes.includes(currentUserId?.id || '') ? "text-primary" : ""}
+                                            className={post.likes.some((like)=>like.id===currentUserId?.id) ? "text-primary" : ""}
                                             onClick={() => handleLikePost(post.id)}
                                         >
                                             <ThumbsUp className="h-4 w-4 mr-1" />

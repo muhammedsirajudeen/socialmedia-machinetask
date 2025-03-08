@@ -34,6 +34,8 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Badge } from "@/components/ui/badge"
+import { set } from "zod"
+import FollowInfoDialog from "@/components/follow-info-dialog"
 
 interface PostResponse {
   data: {
@@ -55,11 +57,14 @@ export default function ProfilePage() {
   const { data: postData, isLoading: isPostsLoading, mutate: mutatePostData }: PostResponse = useFetch(`/user/posts/${userId}`)
   const [isEditing, setIsEditing] = useState(false)
   const [editedUser, setEditedUser] = useState<IUser | undefined>(data?.user)
-  
+  console.log(data)
   // Post editing states
   const [isEditingPost, setIsEditingPost] = useState<string | null>(null)
   const [editedPostContent, setEditedPostContent] = useState("")
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [following,setFollowing]=useState<IUser[]>([])
+  const [followers,setFollowers]=useState<IUser[]>([])
+  const [followinfoDialog,setFollowInfoDialog]=useState(false)
   const [postToDelete, setPostToDelete] = useState<string | null>(null)
 
   useEffect(() => {
@@ -122,6 +127,13 @@ export default function ProfilePage() {
     }
   }
 
+  const viewFollowing=async (followers:Array<IUser>,following:Array<IUser>)=>{
+    console.log(followers,following)
+    setFollowInfoDialog(true)
+    setFollowers(followers)
+    setFollowing(following)
+  }
+
   const renderLoadingState = () => (
     <div className="space-y-6">
       <div className="flex items-center space-x-4">
@@ -135,7 +147,7 @@ export default function ProfilePage() {
       <Skeleton className="h-[300px] w-full rounded-xl" />
     </div>
   )
-
+  
   if (isLoading) return renderLoadingState()
   if (!data?.user) return <div className="container py-6"><p className="text-center text-lg text-red-500">User not found</p></div>
 
@@ -150,7 +162,7 @@ export default function ProfilePage() {
         </Button>
         <h1 className="text-2xl font-bold">Profile</h1>
       </div>
-
+      <FollowInfoDialog setOpen={setFollowInfoDialog} open={followinfoDialog} followers={followers} following={following} />
       <div className="grid gap-6 md:grid-cols-[1fr_2fr] mb-8">
         <Card className="shadow-md">
           <CardHeader className="flex flex-row items-center justify-between">
@@ -178,6 +190,7 @@ export default function ProfilePage() {
                   <p className="text-sm text-muted-foreground">Member since {new Date(data.user.createdAt || Date.now()).toLocaleDateString()}</p>
                 </div>
               )}
+              <Button onClick={()=>viewFollowing(data.user.followers,data.user.following)} size={"sm"} >view following</Button>
             </div>
 
             {isEditing ? (

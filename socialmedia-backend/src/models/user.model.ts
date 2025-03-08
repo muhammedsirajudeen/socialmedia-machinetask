@@ -36,12 +36,14 @@ const userSchema: Schema<IUser> = new mongoose.Schema(
         followers: {
             type: [mongoose.Types.ObjectId],
             required: false,
-            default: []
+            default: [],
+            ref:'User'
         },
         following: {
             type: [mongoose.Types.ObjectId],
             required: false,
-            default: []
+            default: [],
+            ref:'User'
         },
 
     },
