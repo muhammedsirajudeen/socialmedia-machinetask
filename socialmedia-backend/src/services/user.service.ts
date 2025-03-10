@@ -19,7 +19,7 @@ export class UserService extends BaseService<IUser,UserRepository>{
         if(!checkUser){
             throw new Error('User not found')
         }
-        if(!checkUser.comparePassword(user.password!)){
+        if(!(await checkUser.comparePassword(user.password!))){
             throw new Error('Invalid credentials')
         }
         return checkUser
