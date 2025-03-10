@@ -80,7 +80,19 @@ export default function ProfilePage() {
 
   const handleSaveProfile = async () => {
     if (!editedUser) return
-
+    const emailRegex=new RegExp('^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$')
+    if(!emailRegex.test(editedUser.email)){
+      toast("email must be valid")
+      return
+    }
+    if(editedUser.bio?.length!<10){
+      toast('bio cannot be less that 10')
+      return
+    }
+    if(editedUser.username.length<5){
+      toast('usernmae cannot be less that 5 chars')
+      return
+    }
     try {
       await axiosInstance.put(`/user/profile/${userId}`, editedUser)
       toast.success("Profile updated successfully")

@@ -28,7 +28,7 @@ import { Input } from "@/components/ui/input"
 
 // 🔹 Zod Schema Validation
 const postSchema = z.object({
-  content: z.string().max(500, "Content must be less than 500 characters").optional(),
+  content: z.string().min(20).max(500, "Content must be less than 500 characters").optional(),
   image: z
     .instanceof(File)
     .refine((file) => file?.type.startsWith("image/"), { message: "Only image files are allowed!" })

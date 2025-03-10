@@ -10,9 +10,10 @@ resource "aws_key_pair" "deployer" {
 }
 
 # Security Group for EC2 (Allow SSH and HTTP)
+# Security Group for EC2 (Allow SSH, HTTP, and HTTPS)
 resource "aws_security_group" "ec2_sg" {
   name        = "ec2_sg"
-  description = "Allow SSH and HTTP traffic"
+  description = "Allow SSH, HTTP, and HTTPS traffic"
 
   ingress {
     from_port   = 22
@@ -28,6 +29,13 @@ resource "aws_security_group" "ec2_sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
+  ingress {
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
   egress {
     from_port   = 0
     to_port     = 0
@@ -35,6 +43,7 @@ resource "aws_security_group" "ec2_sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 }
+
 
 # Free Tier EC2 Instance (t2.micro)
 # Free Tier EC2 Instance (t2.micro) with Ubuntu OS
